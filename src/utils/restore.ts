@@ -15,7 +15,9 @@ export async function buildRestoreColors(nvim: Neovim): Promise<void> {
     )
   }
 
-  await defineLuaFunction(nvim, "restore_colors", luaLines.join("\n"))
+  const body = luaLines.join("\n")
+  console.log(body)
+  await defineLuaFunction(nvim, "restore_colors", body)
 }
 
 export async function restoreColors(nvim: Neovim): Promise<void> {
