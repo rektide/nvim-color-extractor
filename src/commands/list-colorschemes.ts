@@ -1,5 +1,5 @@
 import {Command} from '@oclif/core'
-import {Neovim} from 'neovim'
+import { createNvim } from '../utils/nvim'
 
 export default class ListColorschemes extends Command {
   static description = 'List all available Neovim color schemes'
@@ -7,7 +7,7 @@ export default class ListColorschemes extends Command {
 
   public async run(): Promise<void> {
     try {
-      const nvim = await Neovim.create()
+      const nvim = await createNvim()
       
       // Get all color schemes using completion
       const schemes = await nvim.call('getcompletion', ['', 'color'])
