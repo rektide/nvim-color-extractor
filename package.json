@@ -1,22 +1,5 @@
 {
-	"name": "ghostty-random",
-	"version": "1.0.0",
-	"main": "ghostty-random.js",
-	"scripts": {
-		"test": "echo \"Error: no test specified\" && exit 1"
-	},
-	"repository": {
-		"type": "git",
-		"url": "https://archive.voodoowarez.com/ghostty-random"
-	},
-	"keywords": [],
-	"author": "rektide de la faye",
-	"license": "MIT",
-	"description": "",
-	"module": "ghostty-random.js"
-}
-{
-  "name": "nvim-theme-parser",
+  "name": "ghostty-random",
   "version": "1.0.0",
   "description": "Neovim color scheme parser",
   "main": "cli.js",
@@ -24,11 +7,23 @@
     "build": "tsc",
     "start": "ts-node cli.ts"
   },
+  "keywords": [
+    "ghostty",
+    "theme",
+    "neovim",
+    "colorscheme"
+  ],
+  "license": "MIT",
+  "author": "rektide de la faye",
+  "repository": {
+    "type": "git",
+    "url": "https://archive.voodoowarez.com/ghostty-random"
+  },
   "dependencies": {
     "ts-node": "^10.9.2",
     "typescript": "^5.3.3"
   },
   "devDependencies": {
-    "@types/node": "^20.11.19"
+    "@types/node": "^20.17.52"
   }
 }
