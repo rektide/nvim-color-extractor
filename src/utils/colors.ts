@@ -1,4 +1,10 @@
-import { HlGroups, HlGroupsNum, HlGroupsRGB, HlGroupsHex, RGB } from "../types"
+import {
+  ColorFormat,
+  HlGroupsNum,
+  HlGroupsRGB,
+  HlGroupsHex,
+  RGB,
+} from "../types"
 
 export function colorIntToRGB(color?: number): RGB | undefined {
   return color
@@ -15,16 +21,19 @@ export function colorIntToHex(color?: number): string | undefined {
   const r = (color >> 16) & 0xff
   const g = (color >> 8) & 0xff
   const b = color & 0xff
-  return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`
+  return `#${r.toString(16).padStart(2, "0")}${g.toString(16).padStart(2, "0")}${b.toString(16).padStart(2, "0")}`
 }
 
-export function toColorFormat(hlGroups: HlGroupsNum, format: 'num' | 'hex' | 'rgb' = 'num') {
+export function toColorFormat(
+  hlGroups: HlGroupsNum,
+  format: ColorFormat = "num",
+) {
   switch (format) {
-    case 'hex':
+    case "hex":
       return hlgToHex(hlGroups)
-    case 'rgb':
+    case "rgb":
       return hlgToRGB(hlGroups)
-    case 'num':
+    case "num":
     default:
       return hlGroups
   }

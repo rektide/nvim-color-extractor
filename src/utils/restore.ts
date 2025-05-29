@@ -30,8 +30,8 @@ function jsToLua(obj: any): string {
 }
 
 export async function buildRestoreColors(nvim: Neovim): Promise<void> {
-  // Get current colors
-  const colors = await extractColors(false, { nvim, rgb: false })
+  // Get current colors in numeric format
+  const colors = await extractColors(false, { nvim, format: 'num' })
 
   // Build individual nvim_set_hl calls for each highlight group
   const luaLines: string[] = []

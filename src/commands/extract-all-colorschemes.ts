@@ -27,7 +27,7 @@ export default class ExtractAllColorschemes extends Command {
           this.log(`Extracting ${name}...`)
 
           // Extract colors for this scheme
-          const colors = await extractColors(name, { nvim })
+          const colors = await extractColors(name, { nvim, format: 'rgb' })
 
           // Store results
           results[name] = {

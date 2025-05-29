@@ -1,15 +1,15 @@
 import { Args, Command } from "@oclif/core"
 import { createNvim } from "../utils/nvim"
-import { Zalgo, HlGroups, HlGroupsNum } from "../types"
+import type { Zalgo, HlGroups, HlGroupsNum, ColorFormat } from "../types"
 import { type Neovim } from "neovim"
-import { colorIntToRGB, hlgToRGB, hlgToHex } from "../utils/colors"
+import { toColorFormat } from "../utils/colors"
 
 export default class ExtractColors extends Command {
   static async extractColors(
     colorscheme: string | false,
     {
       nvim = createNvim() as Zalgo<Neovim>,
-      rgb = true,
+      format = "rgb" as ColorFormat,
       ns = 0,
       link = true,
     } = {},
@@ -25,14 +25,9 @@ export default class ExtractColors extends Command {
     const hlGroups = (await resolved.request("nvim_get_hl", [
       ns,
       { link },
-    ])) as Record<string, any>
+    ])) as HlGroupsNum
 
-    if (rgb) {
-      // Process and convert colors
-      processHighlightGroups(hlGroups)
-    }
-
-    return hlGroups
+    return format ? toColorFormat(hlGroups, format) : hlGroups
   }
 
   static description =
