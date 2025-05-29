@@ -1,23 +1,23 @@
-import { HlGroups, HlGroupsNum } from '../types'
+import { HlGroups, HlGroupsNum, HlGroupsRGB, RGB } from "../types"
 
-export function colorIntToRGB(color?: number): [number, number, number] | undefined {
+export function colorIntToRGB(color?: number): RGB | undefined {
   return color
     ? [
-        (color >> 16) & 0xff, // red
-        (color >> 8) & 0xff,  // green
-        color & 0xff          // blue
-      ]
+      (color >> 16) & 0xff, // red
+      (color >> 8) & 0xff, // green
+      color & 0xff, // blue
+    ]
     : undefined
 }
 
-export function processHighlightGroups(hlGroups: HlGroupsNum): HlGroupsNum {
-  const processed: HlGroupsNum = {}
+export function processHighlightGroups(hlGroups: HlGroupsNum): HlGroupsRGB {
+  const processed: HlGroupsRGB = hlGroups as unknown as HlGroupsRGB
   for (const [key, attrs] of Object.entries(hlGroups)) {
     processed[key] = {
       ...attrs,
-      fg: colorIntToRGB(attrs.foreground),
-      bg: colorIntToRGB(attrs.background),
-      sp: colorIntToRGB(attrs.special)
+      fg: colorIntToRGB(attrs.fg),
+      bg: colorIntToRGB(attrs.bg),
+      sp: colorIntToRGB(attrs.sp),
     }
   }
   return processed
