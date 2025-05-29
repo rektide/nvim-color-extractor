@@ -1,12 +1,12 @@
-import { Command } from "@oclif/core"
-import { createNvim } from "../utils/nvim"
-import { Neovim } from "neovim"
+import {Args, Command} from '@oclif/core'
+import {createNvim} from '../utils/nvim'
+import {Neovim} from 'neovim'
 
 function colorIntToRGB(color: number): [number, number, number] {
   return [
     (color >> 16) & 0xff, // red
-    (color >> 8) & 0xff, // green
-    color & 0xff, // blue
+    (color >> 8) & 0xff,  // green
+    color & 0xff          // blue
   ]
 }
 
@@ -28,28 +28,43 @@ function processHighlightGroups(hlGroups: Record<string, any>) {
 }
 
 export default class ExtractColors extends Command {
-  static description = "Extract current highlight groups with RGB color values"
-  static examples = ["<%= config.bin %> <%= command.id %>"]
+  static description = 'Extract highlight groups from a colorscheme with RGB color values'
+  static examples = [
+    '<%= config.bin %> <%= command.id %> gruvbox',
+    '<%= config.bin %> <%= command.id %> solarized'
+  ]
+
+  static args = {
+    colorscheme: Args.string({
+      description: 'Name of colorscheme to extract',
+      required: true
+    })
+  }
 
   public async run(): Promise<void> {
+    const {args} = await this.parse(ExtractColors)
+
     try {
       const nvim = await createNvim()
 
+      // Set the colorscheme
+      await nvim.command(`colorscheme ${args.colorscheme}`)
+      
+      // Wait briefly for colorscheme to load
+      await new Promise(resolve => setTimeout(resolve, 100))
+
       // Get all highlight groups
-      const hlGroups = (await nvim.call("vim.api.get_hl", [0, {}])) as Record<
-        string,
-        any
-      >
+      const hlGroups = await nvim.call('vim.api.get_hl', [0, {}]) as Record<string, any>
 
       // Process and convert colors
       const processed = processHighlightGroups(hlGroups)
 
       // Output as pretty JSON
-      console.log(JSON.stringify(processed, null, 2))
+      this.log(JSON.stringify(processed, null, 2))
 
       await nvim.quit()
     } catch (error) {
-      this.error(`Failed to extract colors: ${error}`, { exit: 1 })
+      this.error(`Failed to extract colors: ${error}`, {exit: 1})
     }
   }
 }
