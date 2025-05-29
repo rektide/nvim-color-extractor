@@ -5,7 +5,7 @@
   "main": "cli.js",
   "scripts": {
     "build": "tsc",
-    "start": "oclif parse-theme"
+    "start": "ts-node src/index.ts"
   },
   "keywords": [
     "ghostty",
@@ -29,7 +29,7 @@
     "@types/node": "^20.17.52"
   },
   "oclif": {
-    "commands": "./lib/commands",
+    "commands": "./src/commands",
     "bin": "ghostty-random"
   },
   "engines": {
