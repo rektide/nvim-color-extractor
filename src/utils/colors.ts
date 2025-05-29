@@ -1,4 +1,4 @@
-import { HlGroups } from '../types'
+import { HlGroups, HlGroupsNum } from '../types'
 
 export function colorIntToRGB(color?: number): [number, number, number] | undefined {
   return color
@@ -10,8 +10,8 @@ export function colorIntToRGB(color?: number): [number, number, number] | undefi
     : undefined
 }
 
-export function processHighlightGroups(hlGroups: HlGroups): HlGroups {
-  const processed: HlGroups = {}
+export function processHighlightGroups(hlGroups: HlGroupsNum): HlGroupsNum {
+  const processed: HlGroupsNum = {}
   for (const [key, attrs] of Object.entries(hlGroups)) {
     processed[key] = {
       ...attrs,
