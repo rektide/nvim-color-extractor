@@ -32,11 +32,20 @@ export function loggerHack() {
  * @param nvim - Neovim instance
  * @param name - Function name to define
  * @param body - Lua function body
+ * @param args - Named arguments to the Lua function (... will be automatically added)
  */
-export async function defineLuaFunction(nvim: Neovim, name: string, body: string): Promise<void> {
-  await nvim.execLua(`
-    _G.${name} = function(...)
+export async function defineLuaFunction(
+  nvim: Neovim,
+  name: string,
+  body: string,
+  args: string[] = [],
+): Promise<void> {
+  args = args.concat("...")
+
+  const text = `
+    _G.${name} = function(${args.join(",")})
       ${body}
-    end
-  `, []);
+    end`
+
+  await nvim.lua(text, [])
 }
