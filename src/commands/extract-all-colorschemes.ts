@@ -3,6 +3,7 @@ import { createNvim } from "../utils/nvim"
 import { type Neovim } from "neovim"
 import { extractColors } from "./extract-colors"
 import { listColorschemes } from "./list-colorschemes"
+import { buildRestoreColors, restoreColors } from "../utils/restore"
 
 export default class ExtractAllColorschemes extends Command {
   static description = "Extract highlight groups for all available colorschemes"
@@ -12,18 +13,18 @@ export default class ExtractAllColorschemes extends Command {
     let nvim
     try {
       nvim = await createNvim()
+      
+      // Build restore function with current default colors
+      await buildRestoreColors(nvim)
 
       // Get all colorschemes using ListColorschemes utility
       const schemes = await listColorschemes(nvim)
-
-      // Get default colors first
-      const defaultColors = await extractColors(false, { nvim, rgb: false })
 
       const results: Record<string, any> = {}
 
       for (const name of schemes) {
         try {
-          console.log(`Extracting ${name}...`)
+          this.log(`Extracting ${name}...`)
 
           // Extract colors for this scheme
           const colors = await extractColors(name, { nvim })
@@ -34,18 +35,19 @@ export default class ExtractAllColorschemes extends Command {
             colors,
           }
         } catch (error) {
-          console.log(`Error extracting ${name}: ${error}`)
+          this.log(`Error extracting ${name}: ${error}`)
         } finally {
-          // Restore default colors
-          await nvim.request("nvim_set_hl", [0, defaultColors])
+          // Restore to original colors
+          await restoreColors(nvim)
         }
       }
 
       // Output all results as JSON
-      console.log(JSON.stringify(results, null, 2))
+      this.log(JSON.stringify(results, null, 2))
     } catch (error) {
-      console.error(`Failed to extract colorschemes: ${error}`, { exit: 1 })
+      this.error(`Failed to extract colorschemes: ${error}`, {exit: 1})
+    } finally {
+      nvim?.quit()
     }
-    nvim?.quit()
   }
 }
