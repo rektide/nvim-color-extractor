@@ -2,7 +2,7 @@ import { Args, Command } from "@oclif/core"
 import { createNvim } from "../utils/nvim"
 import { Zalgo, HlGroups, HlGroupsNum } from "../types"
 import { type Neovim } from "neovim"
-import { colorIntToRGB, processHighlightGroups } from "../utils/colors"
+import { colorIntToRGB, hlgToRGB, hlgToHex } from "../utils/colors"
 
 export default class ExtractColors extends Command {
   static async extractColors(
