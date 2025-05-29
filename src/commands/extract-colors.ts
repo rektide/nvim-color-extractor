@@ -26,7 +26,7 @@ function processHighlightGroups(hlGroups: Record<string, any>) {
 
 export default class ExtractColors extends Command {
   static async extractColors(
-    colorscheme: string,
+    colorscheme: string | false,
     {
       nvim = createNvim() as Zalgo<Neovim>,
       rgb = true,
@@ -37,7 +37,9 @@ export default class ExtractColors extends Command {
     const resolved = await nvim
 
     // Set the colorscheme
-    await resolved.command(`colorscheme ${colorscheme}`)
+    if (colorscheme) {
+      await resolved.command(`colorscheme ${colorscheme}`)
+    }
 
     // Get all highlight groups
     const hlGroups = (await resolved.request("nvim_get_hl", [
@@ -85,3 +87,5 @@ export default class ExtractColors extends Command {
     nvim?.quit()
   }
 }
+
+export const extractColors = ExtractColors.extractColors

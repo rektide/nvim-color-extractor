@@ -27,3 +27,5 @@ export default class ListColorschemes extends Command {
     }
   }
 }
+
+export const listColorschemes = ListColorschemes.listColorschemes
