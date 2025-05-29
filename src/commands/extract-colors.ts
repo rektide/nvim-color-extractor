@@ -9,7 +9,7 @@ export default class ExtractColors extends Command {
     colorscheme: string | false,
     {
       nvim = createNvim() as Zalgo<Neovim>,
-      format = "rgb" as ColorFormat,
+      format = "hex" as ColorFormat,
       ns = 0,
       link = true,
     } = {},
