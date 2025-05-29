@@ -1,4 +1,5 @@
 import {Command, Flags} from '@oclif/core'
+import {Neovim} from 'neovim'
 import fs from 'fs'
 import {parseColorScheme} from '../colorscheme-parser'
 
