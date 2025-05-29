@@ -18,6 +18,18 @@ export function colorIntToHex(color?: number): string | undefined {
   return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`
 }
 
+export function toColorFormat(hlGroups: HlGroupsNum, format: 'num' | 'hex' | 'rgb' = 'num') {
+  switch (format) {
+    case 'hex':
+      return hlgToHex(hlGroups)
+    case 'rgb':
+      return hlgToRGB(hlGroups)
+    case 'num':
+    default:
+      return hlGroups
+  }
+}
+
 export function hlgToRGB(hlGroups: HlGroupsNum): HlGroupsRGB {
   const processed: HlGroupsRGB = hlGroups as unknown as HlGroupsRGB
   for (const [key, attrs] of Object.entries(hlGroups)) {

@@ -1,9 +1,9 @@
 export type Zalgo<T> = T | Promise<T>
 
 export interface HighlightAttrs<T = number> {
-  foreground?: T
-  background?: T
-  special?: T
+  fg?: T
+  bg?: T
+  sp?: T
   bold?: boolean
   italic?: boolean
   underline?: boolean
@@ -11,5 +11,10 @@ export interface HighlightAttrs<T = number> {
   reverse?: boolean
 }
 
+export type RGB = [number, number, number]
+export type Hex = string
+
 export type HlGroups<T = number> = Record<string, HighlightAttrs<T>>
 export type HlGroupsNum = HlGroups<number>
+export type HlGroupsRGB = HlGroups<RGB>
+export type HlGroupsHex = HlGroups<Hex>

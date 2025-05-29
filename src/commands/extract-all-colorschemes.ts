@@ -1,6 +1,6 @@
 import { Command } from "@oclif/core"
 import { createNvim } from "../utils/nvim"
-import { type Neovim, HlGroups } from "neovim"
+import { type Neovim } from "neovim"
 import { extractColors } from "./extract-colors"
 import { listColorschemes } from "./list-colorschemes"
 import { buildRestoreColors, restoreColors } from "../utils/restore"
@@ -13,7 +13,7 @@ export default class ExtractAllColorschemes extends Command {
     let nvim
     try {
       nvim = await createNvim()
-      
+
       // Build restore function with current default colors
       await buildRestoreColors(nvim)
 
@@ -45,7 +45,7 @@ export default class ExtractAllColorschemes extends Command {
       // Output all results as JSON
       this.log(JSON.stringify(results, null, 2))
     } catch (error) {
-      this.error(`Failed to extract colorschemes: ${error}`, {exit: 1})
+      this.error(`Failed to extract colorschemes: ${error}`, { exit: 1 })
     } finally {
       nvim?.quit()
     }
