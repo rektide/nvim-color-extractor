@@ -1,3 +1,17 @@
+-- Convert Neovim color integer to RGB components
+-- @param color The color integer (e.g., from vim.api.nvim_get_hl())
+-- @return table with r, g, b values (0-255)
+local function color_int_to_rgb(color)
+  if type(color) ~= 'number' then return nil end
+  return {
+    r = bit.band(bit.rshift(color, 16), 0xFF),
+    g = bit.band(bit.rshift(color, 8), 0xFF),
+    b = bit.band(color, 0xFF)
+  }
+end
+
+local bit = require('bit')
+
 -- Create a new buffer to display the results
 local buf = vim.api.nvim_create_buf(true, false)
 vim.api.nvim_set_current_buf(buf)
