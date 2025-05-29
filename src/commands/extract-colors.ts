@@ -1,6 +1,7 @@
 import { Args, Command } from "@oclif/core"
 import { createNvim } from "../utils/nvim"
-import { Neovim } from "neovim"
+import { Zalgo } from "../types"
+import { type Neovim } from "neovim"
 
 export function colorIntToRGB(
   color?: number,
@@ -24,6 +25,34 @@ function processHighlightGroups(hlGroups: Record<string, any>) {
 }
 
 export default class ExtractColors extends Command {
+  static async extractColors(
+    colorscheme: string,
+    {
+      nvim = createNvim() as Zalgo<Neovim>,
+      rgb = true,
+      ns = 0,
+      link = true,
+    } = {},
+  ) {
+    const resolved = await nvim
+
+    // Set the colorscheme
+    await resolved.command(`colorscheme ${colorscheme}`)
+
+    // Get all highlight groups
+    const hlGroups = (await resolved.request("nvim_get_hl", [
+      ns,
+      { link },
+    ])) as Record<string, any>
+
+    if (rgb) {
+      // Process and convert colors
+      processHighlightGroups(hlGroups)
+    }
+
+    return hlGroups
+  }
+
   static description =
     "Extract highlight groups from a colorscheme with RGB color values"
   static examples = [
@@ -45,19 +74,10 @@ export default class ExtractColors extends Command {
     try {
       nvim = await createNvim()
 
-      // Set the colorscheme
-      await nvim.command(`colorscheme ${args.colorscheme}`)
+      const hlGroups = await ExtractColors.extractColors(args.colorscheme, {
+        nvim,
+      })
 
-      // Get all highlight groups
-      const hlGroups = (await nvim.request("nvim_get_hl", [0, {}])) as Record<
-        string,
-        any
-      >
-
-      // Process and convert colors
-      processHighlightGroups(hlGroups)
-
-      // Output as pretty JSON
       console.log(JSON.stringify(hlGroups, null, "\t"))
     } catch (error) {
       this.error(`Failed to extract colors: ${error}`, { exit: 1 })
