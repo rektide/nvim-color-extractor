@@ -1,4 +1,4 @@
-import {Command, Flags} from '@oclif/core'
+import {Args, Command, Flags} from '@oclif/core'
 import {Neovim} from 'neovim'
 import fs from 'fs'
 import {parseColorScheme} from '../colorscheme-parser'
@@ -19,13 +19,13 @@ export default class ParseTheme extends Command {
     }),
   }
 
-  static args = [
-    {
-      name: 'file',
+  static args = {
+    file: Args.file({
       description: 'Path to theme file (.vim or .lua)',
       required: true,
-    },
-  ]
+      exists: true,
+    }),
+  }
 
   public async run(): Promise<void> {
     const {args, flags} = await this.parse(ParseTheme)
