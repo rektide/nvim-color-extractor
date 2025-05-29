@@ -1,7 +1,12 @@
 import { Command } from "@oclif/core"
 import { createNvim } from "../utils/nvim"
+import { Neovim } from "neovim"
 
 export default class ListColorschemes extends Command {
+  static listColorschemes(nvim: Neovim) {
+    return nvim.call("getcompletion", ["", "color"])
+  }
+
   static description = "List all available Neovim color schemes"
   static examples = ["<%= config.bin %> <%= command.id %>"]
 
@@ -10,7 +15,7 @@ export default class ListColorschemes extends Command {
       const nvim = await createNvim()
 
       // Get all color schemes using completion
-      const schemes = await nvim.call("getcompletion", ["", "color"])
+      const schemes = await ListColorschemes.listColorschemes(nvim)
 
       // Convert to JSON and print
       console.log(JSON.stringify(schemes, null, "\t"))
