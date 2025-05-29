@@ -26,3 +26,17 @@ export function loggerHack() {
   const logger = getLogger()
   replica.forEach(([k, v]) => ((console as any)[k] = v))
 }
+
+/**
+ * Defines a Lua function in the Neovim global scope
+ * @param nvim - Neovim instance
+ * @param name - Function name to define
+ * @param body - Lua function body
+ */
+export async function defineLuaFunction(nvim: Neovim, name: string, body: string): Promise<void> {
+  await nvim.execLua(`
+    _G.${name} = function(...)
+      ${body}
+    end
+  `, []);
+}
