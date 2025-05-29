@@ -1,28 +1,8 @@
 import { Args, Command } from "@oclif/core"
 import { createNvim } from "../utils/nvim"
-import { Zalgo } from "../types"
+import { Zalgo, HlGroups } from "../types"
 import { type Neovim } from "neovim"
-
-export function colorIntToRGB(
-  color?: number,
-): [number, number, number] | undefined {
-  return color
-    ? [
-      (color >> 16) & 0xff, // red
-      (color >> 8) & 0xff, // green
-      color & 0xff, // blue
-    ]
-    : undefined
-}
-function processHighlightGroups(hlGroups: Record<string, any>) {
-  for (const key in hlGroups) {
-    const color = hlGroups[key]
-    color.fg = colorIntToRGB(color.fg)
-    color.bg = colorIntToRGB(color.back)
-    color.sp = colorIntToRGB(color.sp)
-  }
-  return hlGroups
-}
+import { colorIntToRGB, processHighlightGroups } from "../utils/colors"
 
 export default class ExtractColors extends Command {
   static async extractColors(
