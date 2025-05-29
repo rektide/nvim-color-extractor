@@ -1,12 +1,12 @@
-import {Command} from '@oclif/core'
-import {createNvim} from '../utils/nvim'
-import {Neovim} from 'neovim'
+import { Command } from "@oclif/core"
+import { createNvim } from "../utils/nvim"
+import { Neovim } from "neovim"
 
 function colorIntToRGB(color: number): [number, number, number] {
   return [
     (color >> 16) & 0xff, // red
-    (color >> 8) & 0xff,  // green
-    color & 0xff          // blue
+    (color >> 8) & 0xff, // green
+    color & 0xff, // blue
   ]
 }
 
@@ -28,25 +28,28 @@ function processHighlightGroups(hlGroups: Record<string, any>) {
 }
 
 export default class ExtractColors extends Command {
-  static description = 'Extract current highlight groups with RGB color values'
-  static examples = ['<%= config.bin %> <%= command.id %>']
+  static description = "Extract current highlight groups with RGB color values"
+  static examples = ["<%= config.bin %> <%= command.id %>"]
 
   public async run(): Promise<void> {
     try {
       const nvim = await createNvim()
-      
+
       // Get all highlight groups
-      const hlGroups = await nvim.call('vim.api.get_hl', [0, {}]) as Record<string, any>
-      
+      const hlGroups = (await nvim.call("vim.api.get_hl", [0, {}])) as Record<
+        string,
+        any
+      >
+
       // Process and convert colors
       const processed = processHighlightGroups(hlGroups)
-      
+
       // Output as pretty JSON
-      this.log(JSON.stringify(processed, null, 2))
-      
+      console.log(JSON.stringify(processed, null, 2))
+
       await nvim.quit()
     } catch (error) {
-      this.error(`Failed to extract colors: ${error}`, {exit: 1})
+      this.error(`Failed to extract colors: ${error}`, { exit: 1 })
     }
   }
 }
