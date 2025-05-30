@@ -81,10 +81,11 @@ export default class ToGhost extends Command {
     file.write(`cursor = ${cursorGroup.fg}\n\n`)
 
     // Create palette with remaining colors
-    const availableColors = Array.from(colors)
-    for (let i = 0; i < Math.min(16, availableColors.length); i++) {
+    let availableColors = Array.from(colors)
+    for (let i = 0; i < 16; i++) {
       if (availableColors.length === 0) {
-        throw new Error("Not enough unique colors for palette")
+        // If we run out of colors, re-use the set
+        availableColors = Array.from(colors)
       }
       const randomIndex = Math.floor(Math.random() * availableColors.length)
       const color = availableColors[randomIndex]
