@@ -15,7 +15,7 @@ export default class NvimList extends Command {
       const nvim = await createNvim()
 
       // Get all color schemes using completion
-      const schemes = await ListColorschemes.listColorschemes(nvim)
+      const schemes = await NvimList.listColorschemes(nvim)
 
       // Convert to JSON and print
       console.log(JSON.stringify(schemes, null, "\t"))

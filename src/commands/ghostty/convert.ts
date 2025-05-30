@@ -1,15 +1,15 @@
+import fs from "node:fs"
+import path from "node:path"
 import { Args, Command } from "@oclif/core"
-import { createNvim } from "../utils/nvim"
+
+import { HlGroupsHex } from "../../types"
 import { extractColors } from "../nvim/extract"
-import { HlGroupsHex } from "../types"
-import fs from "fs"
-import path from "path"
-import { prepareThemesDirectory } from "../utils/ghostty"
+import { prepareThemesDirectory } from "../../utils/ghostty"
+import { createNvim } from "../../utils/nvim"
 
 export default class GhosttyConvert extends Command {
   static description = "Convert a Neovim colorscheme to Ghostty theme format"
   static examples = ["<%= config.bin %> <%= command.id %> gruvbox"]
-  static alias = ["ghost:convert"]
 
   static args = {
     colorscheme: Args.string({
@@ -96,7 +96,7 @@ export default class GhosttyConvert extends Command {
   }
 
   public async run(): Promise<void> {
-    const { args } = await this.parse(ToGhost)
+    const { args } = await this.parse(GhosttyConvert)
     let nvim
     let file: fs.WriteStream | undefined
 
@@ -112,7 +112,7 @@ export default class GhosttyConvert extends Command {
       const ghosttyDir = prepareThemesDirectory()
       const themePath = path.join(ghosttyDir, args.colorscheme)
       file = fs.createWriteStream(themePath)
-      ToGhost.writeTheme(file, args.colorscheme, hlGroups)
+      GhosttyConvert.writeTheme(file, args.colorscheme, hlGroups)
 
       console.log(
         `Successfully created Ghostty theme at: ${path.join(ghosttyDir, args.colorscheme)}`,

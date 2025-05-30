@@ -1,16 +1,16 @@
+import fs from "node:fs"
+import path from "node:path"
 import { Command } from "@oclif/core"
+
+import { createNvim } from "../../utils/nvim"
+import { prepareThemesDirectory } from "../../utils/ghostty"
 import { listColorschemes } from "../nvim/list"
-import { createNvim } from "../utils/nvim"
 import GhosttyConvert from "./convert"
-import { prepareThemesDirectory } from "../utils/ghostty"
-import fs from "fs"
-import path from "path"
 
 export default class GhosttyRandom extends Command {
   static description =
     "Convert a random Neovim colorscheme to Ghostty theme format, and set ghostty to use"
   static examples = ["<%= config.bin %> <%= command.id %>"]
-  static aliases = ["ghostty:random"]
 
   public async run(): Promise<void> {
     let nvim

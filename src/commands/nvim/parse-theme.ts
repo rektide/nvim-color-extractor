@@ -27,7 +27,7 @@ export default class NvimParseTheme extends Command {
   }
 
   public async run(): Promise<void> {
-    const { args, flags } = await this.parse(ParseTheme)
+    const { args, flags } = await this.parse(NvimParseTheme)
 
     try {
       const content = fs.readFileSync(args.file, "utf-8")

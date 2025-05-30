@@ -1,8 +1,9 @@
 import { Args, Command } from "@oclif/core"
-import { createNvim } from "../../utils/nvim"
-import type { Zalgo, HlGroups, HlGroupsNum, ColorFormat } from "../types"
 import { type Neovim } from "neovim"
-import { toColorFormat } from "../utils/colors"
+
+import type { Zalgo, HlGroupsNum, ColorFormat } from "../../types"
+import { createNvim } from "../../utils/nvim"
+import { toColorFormat } from "../../utils/colors"
 
 export default class NvimExtract extends Command {
   static async extractColors(
@@ -55,13 +56,13 @@ export default class NvimExtract extends Command {
   }
 
   public async run(): Promise<void> {
-    const { args } = await this.parse(ExtractColors)
+    const { args } = await this.parse(NvimExtract)
 
     let nvim
     try {
       nvim = await createNvim()
 
-      const hlGroups = await ExtractColors.extractColors(args.colorscheme, {
+      const hlGroups = await NvimExtract.extractColors(args.colorscheme, {
         nvim,
       })
 
