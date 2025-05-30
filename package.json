@@ -30,7 +30,15 @@
   },
   "oclif": {
     "commands": "./src/commands",
-    "bin": "nvim-color-extractor"
+    "bin": "nvim-color-extractor",
+    "topics": {
+      "nvim": {
+        "description": "commands for extracting nvim colorschemes"
+      },
+      "ghostty": {
+        "description": "commands for generating ghostty themes from nvim colorschemes"
+      }
+    }
   },
   "engines": {
     "node": ">=18.0.0"
