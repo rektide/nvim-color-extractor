@@ -45,24 +45,6 @@ export default class ToGhost extends Command {
         throw new Error("No colors found in colorscheme")
       }
 
-      // Generate Ghostty theme content
-      let themeContent = `# ${args.colorscheme} theme generated from Neovim colorscheme\n\n`
-      themeContent += `foreground = ${getRandomColor(colors)}\n`
-      themeContent += `background = #000000\n`
-      themeContent += `cursor = ${getRandomColor(colors)}\n\n`
-
-      // Create palette with random unique colors
-      const availableColors = Array.from(colors)
-      for (let i = 0; i < Math.min(16, availableColors.length); i++) {
-        if (availableColors.length === 0) {
-          throw new Error('Not enough unique colors for palette')
-        }
-        const randomIndex = Math.floor(Math.random() * availableColors.length)
-        const color = availableColors[randomIndex]
-        themeContent += `palette = ${i}=${color}\n`
-        availableColors.splice(randomIndex, 1) // Remove used color
-      }
-
       // Ensure Ghostty config directory exists
       const xdgConfigDir =
         process.env.XDG_CONFIG_DIR || path.join(os.homedir(), ".config")
@@ -71,10 +53,30 @@ export default class ToGhost extends Command {
         fs.mkdirSync(ghosttyDir, { recursive: true })
       }
 
-      // Write theme file
+      // Open file for writing
       const themePath = path.join(ghosttyDir, args.colorscheme)
-      fs.writeFileSync(themePath, themeContent)
+      const file = fs.createWriteStream(themePath)
 
+      // Write header
+      file.write(`# ${args.colorscheme} theme generated from Neovim colorscheme\n\n`)
+      file.write(`foreground = ${getRandomColor(colors)}\n`)
+      file.write(`background = #000000\n`)
+      file.write(`cursor = ${getRandomColor(colors)}\n\n`)
+
+      // Create palette with random unique colors
+      const availableColors = Array.from(colors)
+      for (let i = 0; i < Math.min(16, availableColors.length); i++) {
+        if (availableColors.length === 0) {
+          file.end()
+          throw new Error('Not enough unique colors for palette')
+        }
+        const randomIndex = Math.floor(Math.random() * availableColors.length)
+        const color = availableColors[randomIndex]
+        file.write(`palette = ${i}=${color}\n`)
+        availableColors.splice(randomIndex, 1) // Remove used color
+      }
+
+      file.end()
       console.log(`Successfully created Ghostty theme at: ${themePath}`)
     } catch (error) {
       console.error(`Failed to create Ghostty theme: ${error}`, { exit: 1 })
