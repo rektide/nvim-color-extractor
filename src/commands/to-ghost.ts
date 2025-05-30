@@ -22,6 +22,47 @@ export default class ToGhost extends Command {
     }),
   }
 
+  private static prepareThemesDirectory(): string {
+    const xdgConfigDir = process.env.XDG_CONFIG_DIR || path.join(os.homedir(), ".config")
+    const ghosttyDir = path.join(xdgConfigDir, "ghostty", "themes")
+    if (!fs.existsSync(ghosttyDir)) {
+      fs.mkdirSync(ghosttyDir, { recursive: true })
+    }
+    return ghosttyDir
+  }
+
+  private static openFile(ghosttyDir: string, colorscheme: string): fs.WriteStream {
+    const themePath = path.join(ghosttyDir, colorscheme)
+    return fs.createWriteStream(themePath)
+  }
+
+  private static writeTheme(
+    file: fs.WriteStream,
+    colorscheme: string,
+    colors: Set<string>
+  ): void {
+    // Write header
+    file.write(`# ${colorscheme} theme generated from Neovim colorscheme\n\n`)
+    file.write(`foreground = ${getRandomColor(colors)}\n`)
+    file.write(`background = #000000\n`)
+    file.write(`cursor = ${getRandomColor(colors)}\n\n`)
+
+    // Create palette with random unique colors
+    const availableColors = Array.from(colors)
+    for (let i = 0; i < Math.min(16, availableColors.length); i++) {
+      if (availableColors.length === 0) {
+        file.end()
+        throw new Error('Not enough unique colors for palette')
+      }
+      const randomIndex = Math.floor(Math.random() * availableColors.length)
+      const color = availableColors[randomIndex]
+      file.write(`palette = ${i}=${color}\n`)
+      availableColors.splice(randomIndex, 1) // Remove used color
+    }
+
+    file.end()
+  }
+
   public async run(): Promise<void> {
     const { args } = await this.parse(ToGhost)
     let nvim
@@ -45,43 +86,15 @@ export default class ToGhost extends Command {
         throw new Error("No colors found in colorscheme")
       }
 
-      // Ensure Ghostty config directory exists
-      const xdgConfigDir =
-        process.env.XDG_CONFIG_DIR || path.join(os.homedir(), ".config")
-      const ghosttyDir = path.join(xdgConfigDir, "ghostty", "themes")
-      if (!fs.existsSync(ghosttyDir)) {
-        fs.mkdirSync(ghosttyDir, { recursive: true })
-      }
+      const ghosttyDir = ToGhost.prepareThemesDirectory()
+      const file = ToGhost.openFile(ghosttyDir, args.colorscheme)
+      ToGhost.writeTheme(file, args.colorscheme, colors)
 
-      // Open file for writing
-      const themePath = path.join(ghosttyDir, args.colorscheme)
-      const file = fs.createWriteStream(themePath)
-
-      // Write header
-      file.write(`# ${args.colorscheme} theme generated from Neovim colorscheme\n\n`)
-      file.write(`foreground = ${getRandomColor(colors)}\n`)
-      file.write(`background = #000000\n`)
-      file.write(`cursor = ${getRandomColor(colors)}\n\n`)
-
-      // Create palette with random unique colors
-      const availableColors = Array.from(colors)
-      for (let i = 0; i < Math.min(16, availableColors.length); i++) {
-        if (availableColors.length === 0) {
-          file.end()
-          throw new Error('Not enough unique colors for palette')
-        }
-        const randomIndex = Math.floor(Math.random() * availableColors.length)
-        const color = availableColors[randomIndex]
-        file.write(`palette = ${i}=${color}\n`)
-        availableColors.splice(randomIndex, 1) // Remove used color
-      }
-
-      file.end()
-      console.log(`Successfully created Ghostty theme at: ${themePath}`)
+      console.log(`Successfully created Ghostty theme at: ${path.join(ghosttyDir, args.colorscheme)}`)
     } catch (error) {
       console.error(`Failed to create Ghostty theme: ${error}`, { exit: 1 })
     } finally {
+      nvim?.quit()
     }
-    nvim?.quit()
   }
 }
