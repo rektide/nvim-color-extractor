@@ -33,8 +33,18 @@ export async function buildRestoreColors(nvim: Neovim): Promise<void> {
   // Get current colors in numeric format
   const colors = await extractColors(false, { nvim, format: 'num' })
 
-  // Build individual nvim_set_hl calls for each highlight group
-  const luaLines: string[] = []
+  // Build lua function that:
+  // 1. First clears all highlight groups
+  // 2. Then restores the saved colors
+  const luaLines = [
+    '-- First clear all highlight groups',
+    'local highlights = vim.api.nvim_get_hl(0, {})',
+    'for name,_ in pairs(highlights) do',
+    '  vim.api.nvim_set_hl(0, name, nil)',
+    'end',
+    '',
+    '-- Then restore saved colors'
+  ]
 
   for (const [group, attrs] of Object.entries(colors)) {
     const luaAttrs = jsToLua(attrs)
