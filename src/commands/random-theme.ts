@@ -4,6 +4,7 @@ import { createNvim } from "../utils/nvim"
 import ToGhost from "./to-ghost"
 import fs from "fs"
 import path from "path"
+import os from "os"
 
 export default class RandomTheme extends Command {
   static description =
@@ -34,9 +35,35 @@ export default class RandomTheme extends Command {
         // Convert using existing ToGhost command
         ToGhost.run([randomScheme])
       }
+
+      // Update Ghostty config to use this theme
+      this.updateGhosttyConfig(randomScheme)
     } catch (error) {
       console.error(`Failed to create random theme: ${error}`, { exit: 1 })
     }
     nvim?.quit()
+  }
+
+  private updateGhosttyConfig(themeName: string): void {
+    const xdgConfigDir = process.env.XDG_CONFIG_DIR || path.join(os.homedir(), ".config")
+    const configPath = path.join(xdgConfigDir, "ghostty", "config")
+    
+    try {
+      let configContent = ""
+      if (fs.existsSync(configPath)) {
+        configContent = fs.readFileSync(configPath, "utf-8")
+        
+        // Comment out any existing theme lines
+        configContent = configContent.replace(/^theme\s*=/gm, "# theme =")
+      }
+
+      // Append new theme setting
+      configContent += `\ntheme = ${themeName}\n`
+
+      fs.writeFileSync(configPath, configContent)
+      console.log(`Updated Ghostty config at ${configPath} to use theme: ${themeName}`)
+    } catch (error) {
+      console.error(`Failed to update Ghostty config: ${error}`)
+    }
   }
 }
