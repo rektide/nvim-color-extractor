@@ -78,12 +78,13 @@ export default class ToGhost extends Command {
     file.write(`# ${colorscheme} theme generated from Neovim colorscheme\n\n`)
     file.write(`foreground = ${normalGroup.fg}\n`)
     file.write(`background = ${normalGroup.bg}\n`)
-    file.write(`cursor = ${cursorGroup.fg}\n\n`)
+    file.write(`cursor-text = ${cursorGroup.fg}\n\n`)
 
     // Create palette with remaining colors
     let availableColors = Array.from(colors)
     for (let i = 0; i < 16; i++) {
       if (availableColors.length === 0) {
+        console.error(`ran out of colors at: ${i}`)
         // If we run out of colors, re-use the set
         availableColors = Array.from(colors)
       }
