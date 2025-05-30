@@ -1,23 +1,23 @@
 {
-  "name": "ghostty-random",
+  "name": "nvim-color-extractor",
   "version": "1.0.0",
-  "description": "Neovim color scheme parser",
+  "description": "Neovim color scheme extractor and transformer, with ghostty output",
   "main": "cli.js",
   "scripts": {
     "build": "tsc",
     "start": "ts-node src/index.ts"
   },
   "keywords": [
-    "ghostty",
-    "theme",
     "neovim",
-    "colorscheme"
+    "theme",
+    "colorscheme",
+    "ghostty"
   ],
   "license": "MIT",
   "author": "rektide de la faye",
   "repository": {
     "type": "git",
-    "url": "https://archive.voodoowarez.com/ghostty-random"
+    "url": "https://archive.voodoowarez.com/nvim-color-extractor"
   },
   "dependencies": {
     "@oclif/core": "^4.3.0",
@@ -30,7 +30,7 @@
   },
   "oclif": {
     "commands": "./src/commands",
-    "bin": "ghostty-random"
+    "bin": "nvim-color-extractor"
   },
   "engines": {
     "node": ">=18.0.0"

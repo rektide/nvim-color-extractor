@@ -9,6 +9,7 @@ import { prepareThemesDirectory } from "../utils/ghostty"
 export default class ToGhost extends Command {
   static description = "Convert a Neovim colorscheme to Ghostty theme format"
   static examples = ["<%= config.bin %> <%= command.id %> gruvbox"]
+  static alias = ["ghost:convert"]
 
   static args = {
     colorscheme: Args.string({

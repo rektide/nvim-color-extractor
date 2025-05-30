@@ -8,8 +8,9 @@ import path from "path"
 
 export default class RandomTheme extends Command {
   static description =
-    "Convert a random Neovim colorscheme to Ghostty theme format"
+    "Convert a random Neovim colorscheme to Ghostty theme format, and set ghostty to use"
   static examples = ["<%= config.bin %> <%= command.id %>"]
+  static aliases = ["ghostty:random"]
 
   public async run(): Promise<void> {
     let nvim
