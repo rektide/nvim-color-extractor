@@ -39,8 +39,18 @@ export default class ToGhost extends Command {
   private static writeTheme(
     file: fs.WriteStream,
     colorscheme: string,
-    colors: Set<string>
+    hlGroups: HlGroupsHex
   ): void {
+    // Collect all unique foreground colors
+    const colors = new Set<string>()
+    for (const group of Object.values(hlGroups)) {
+      if (group.fg) colors.add(group.fg)
+    }
+
+    if (colors.size === 0) {
+      file.end()
+      throw new Error("No colors found in colorscheme")
+    }
     // Write header
     file.write(`# ${colorscheme} theme generated from Neovim colorscheme\n\n`)
     file.write(`foreground = ${getRandomColor(colors)}\n`)
@@ -76,19 +86,9 @@ export default class ToGhost extends Command {
         format: "hex",
       })) as HlGroupsHex
 
-      // Collect all unique foreground colors
-      const colors = new Set<string>()
-      for (const group of Object.values(hlGroups)) {
-        if (group.fg) colors.add(group.fg)
-      }
-
-      if (colors.size === 0) {
-        throw new Error("No colors found in colorscheme")
-      }
-
       const ghosttyDir = ToGhost.prepareThemesDirectory()
       const file = ToGhost.openFile(ghosttyDir, args.colorscheme)
-      ToGhost.writeTheme(file, args.colorscheme, colors)
+      ToGhost.writeTheme(file, args.colorscheme, hlGroups)
 
       console.log(`Successfully created Ghostty theme at: ${path.join(ghosttyDir, args.colorscheme)}`)
     } catch (error) {
