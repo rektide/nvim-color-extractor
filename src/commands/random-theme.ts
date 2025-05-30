@@ -2,6 +2,8 @@ import { Command } from "@oclif/core"
 import { listColorschemes } from "./list-colorschemes"
 import { createNvim } from "../utils/nvim"
 import ToGhost from "./to-ghost"
+import fs from "fs"
+import path from "path"
 
 export default class RandomTheme extends Command {
   static description =
@@ -22,8 +24,16 @@ export default class RandomTheme extends Command {
       const randomScheme = schemes[Math.floor(Math.random() * schemes.length)]
       console.log(`Selected random colorscheme: ${randomScheme}`)
 
-      // Convert using existing ToGhost command
-      ToGhost.run([randomScheme])
+      // Check if theme already exists in Ghostty's directory
+      const ghosttyDir = ToGhost.prepareThemesDirectory()
+      const themePath = path.join(ghosttyDir, randomScheme)
+      
+      if (fs.existsSync(themePath)) {
+        console.log(`Theme ${randomScheme} already exists at ${themePath}`)
+      } else {
+        // Convert using existing ToGhost command
+        ToGhost.run([randomScheme])
+      }
     } catch (error) {
       console.error(`Failed to create random theme: ${error}`, { exit: 1 })
     }
