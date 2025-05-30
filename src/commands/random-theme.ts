@@ -28,7 +28,7 @@ export default class RandomTheme extends Command {
       // Check if theme already exists in Ghostty's directory
       const ghosttyDir = ToGhost.prepareThemesDirectory()
       const themePath = path.join(ghosttyDir, randomScheme)
-      
+
       if (fs.existsSync(themePath)) {
         console.log(`Theme ${randomScheme} already exists at ${themePath}`)
       } else {
@@ -44,9 +44,12 @@ export default class RandomTheme extends Command {
     nvim?.quit()
   }
 
-  private async updateGhosttyConfig(colorscheme: string, ghosttyDir: string): Promise<void> {
+  private async updateGhosttyConfig(
+    colorscheme: string,
+    ghosttyDir: string,
+  ): Promise<void> {
     const configPath = path.join(path.dirname(ghosttyDir), "config")
-    
+
     try {
       let configContent = ""
       try {
@@ -54,17 +57,20 @@ export default class RandomTheme extends Command {
         // Comment out any existing theme lines
         configContent = configContent.replace(/^theme\s*=/gm, "# theme =")
       } catch (error) {
-        if (error.code !== 'ENOENT') {
+        if ((error as any)?.code !== "ENOENT") {
           throw error
         }
         // File doesn't exist yet, we'll create it
       }
 
       // Append new theme setting
-      configContent += `\ntheme = ${colorscheme}\n`
+      const sep = configContent.length ? "\n" : ""
+      configContent += `${sep}theme = ${colorscheme}\n`
 
       await fs.promises.writeFile(configPath, configContent)
-      console.log(`Updated Ghostty config at ${configPath} to use colorscheme: ${colorscheme}`)
+      console.log(
+        `Updated Ghostty config at ${configPath} to use colorscheme: ${colorscheme}`,
+      )
     } catch (error) {
       console.error(`Failed to update Ghostty config: ${error}`)
     }

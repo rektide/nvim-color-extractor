@@ -17,7 +17,7 @@ export default class ToGhost extends Command {
     }),
   }
 
-  private static prepareThemesDirectory(): string {
+  public static prepareThemesDirectory(): string {
     const xdgConfigDir =
       process.env.XDG_CONFIG_DIR || path.join(os.homedir(), ".config")
     const ghosttyDir = path.join(xdgConfigDir, "ghostty", "themes")
