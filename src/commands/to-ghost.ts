@@ -40,19 +40,31 @@ export default class ToGhost extends Command {
     colorscheme: string,
     hlGroups: HlGroupsHex,
   ): void {
-    // Validate Normal group exists and has required colors
+    // Validate groups exists and have required colors
     const normalGroup = hlGroups.Normal
     const cursorGroup = hlGroups.Cursor
+    const visualGroup = hlGroups.Visual
     if (!normalGroup) {
       throw new Error("Colorscheme has no Normal highlight group")
     }
-    if (!normalGroup?.fg || !normalGroup?.bg) {
+    if (!normalGroup.fg || !normalGroup.bg) {
       throw new Error(
         "Normal group must have both foreground and background colors",
       )
     }
-    if (!cursorGroup?.fg) {
+    if (!cursorGroup) {
+      throw new Error("Colorscheme has no Cursor highlight group")
+    }
+    if (!cursorGroup.fg) {
       throw new Error("Cursor group must have foreground")
+    }
+    if (!visualGroup) {
+      throw new Error("Colorscheme has no Visual highlight group")
+    }
+    if (!visualGroup.fg || !visualGroup.bg) {
+      throw new Error(
+        "Visual group must have both foreground and background colors",
+      )
     }
 
     // Collect all unique foreground colors with no background
@@ -73,12 +85,17 @@ export default class ToGhost extends Command {
     // remove basic colors
     colors.delete(normalGroup.fg)
     colors.delete(cursorGroup.fg)
+    colors.delete(visualGroup.fg)
+    colors.delete(visualGroup.bg)
 
-    // Write header using Normal group colors
+    // Write header using Normal and Visual group colors
     file.write(`# ${colorscheme} theme generated from Neovim colorscheme\n\n`)
     file.write(`foreground = ${normalGroup.fg}\n`)
     file.write(`background = ${normalGroup.bg}\n`)
-    file.write(`cursor-text = ${cursorGroup.fg}\n\n`)
+    file.write(`cursor-text = ${cursorGroup.fg}\n`)
+    file.write(`selection-foreground = ${visualGroup.fg}\n`)
+    file.write(`selection-background = ${visualGroup.bg}\n`)
+    file.write(`\n`)
 
     // Create palette with remaining colors
     let availableColors = Array.from(colors)
