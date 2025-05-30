@@ -31,7 +31,8 @@ export default class ExtractColors extends Command {
     const keys = Object.keys(hlGroups)
     for (const key of keys) {
       const entry = hlGroups[key]
-      if (!(entry.fg || entry.bg || entry.sp)) {
+
+      if (Object.keys(entry).length === 0) {
         delete hlGroups[key]
       }
     }
