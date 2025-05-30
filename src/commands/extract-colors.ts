@@ -27,6 +27,16 @@ export default class ExtractColors extends Command {
       { link },
     ])) as HlGroupsNum
 
+    // `highlight clear` leaves a bunch of empty hlgroups in it's wake! boo.
+    const keys = Object.keys(hlGroups)
+    for (const key of keys) {
+      const entry = hlGroups[key]
+
+      if (Object.keys(entry).length === 0) {
+        delete hlGroups[key]
+      }
+    }
+
     return format ? toColorFormat(hlGroups, format) : hlGroups
   }
 
