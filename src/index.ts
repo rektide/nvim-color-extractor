@@ -1,7 +1,7 @@
-#!/usr/bin/env ts-node
+#!/usr/bin/env -S npx ts-node
 
-import {run} from '@oclif/core'
+import { run } from "@oclif/core"
 
 run()
-  .then(() => {})
-  .catch(console.error)
+	.then(() => { })
+	.catch(console.error)
