@@ -5,7 +5,7 @@ import { extractColors } from "./extract-colors"
 import { listColorschemes } from "./list-colorschemes"
 import { buildRestoreColors, restoreColors } from "../utils/restore"
 
-export default class ExtractAllColorschemes extends Command {
+export default class NvimExtractAll extends Command {
   static description = "Extract highlight groups for all available colorschemes"
   static examples = ["<%= config.bin %> <%= command.id %>"]
 

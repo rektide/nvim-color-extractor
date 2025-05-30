@@ -4,7 +4,7 @@ import type { Zalgo, HlGroups, HlGroupsNum, ColorFormat } from "../types"
 import { type Neovim } from "neovim"
 import { toColorFormat } from "../utils/colors"
 
-export default class ExtractColors extends Command {
+export default class NvimExtract extends Command {
   static async extractColors(
     colorscheme: string | false,
     {
@@ -73,4 +73,4 @@ export default class ExtractColors extends Command {
   }
 }
 
-export const extractColors = ExtractColors.extractColors
+export const extractColors = NvimExtract.extractColors

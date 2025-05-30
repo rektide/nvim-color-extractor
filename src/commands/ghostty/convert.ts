@@ -6,7 +6,7 @@ import fs from "fs"
 import path from "path"
 import { prepareThemesDirectory } from "../utils/ghostty"
 
-export default class ToGhost extends Command {
+export default class GhosttyConvert extends Command {
   static description = "Convert a Neovim colorscheme to Ghostty theme format"
   static examples = ["<%= config.bin %> <%= command.id %> gruvbox"]
   static alias = ["ghost:convert"]

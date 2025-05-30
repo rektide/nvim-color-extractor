@@ -3,7 +3,7 @@ import { Neovim } from "neovim"
 import fs from "fs"
 import { parseColorScheme } from "../colorscheme-parser"
 
-export default class ParseTheme extends Command {
+export default class NvimParseTheme extends Command {
   static description = "Parse a Neovim color theme file (bad, hack)"
   static examples = [
     "<%= config.bin %> <%= command.id %> simple-dark.vim",

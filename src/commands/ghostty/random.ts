@@ -6,7 +6,7 @@ import { prepareThemesDirectory } from "../utils/ghostty"
 import fs from "fs"
 import path from "path"
 
-export default class RandomTheme extends Command {
+export default class GhosttyRandom extends Command {
   static description =
     "Convert a random Neovim colorscheme to Ghostty theme format, and set ghostty to use"
   static examples = ["<%= config.bin %> <%= command.id %>"]
@@ -34,7 +34,7 @@ export default class RandomTheme extends Command {
         console.log(`Theme ${randomScheme} already exists at ${themePath}`)
       } else {
         // Convert using existing ToGhost command
-        ToGhost.run([randomScheme])
+        GhosttyConvert.run([randomScheme])
       }
 
       // Update Ghostty config to use this theme

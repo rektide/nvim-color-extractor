@@ -2,7 +2,7 @@ import { Command } from "@oclif/core"
 import { createNvim } from "../utils/nvim"
 import { Neovim } from "neovim"
 
-export default class ListColorschemes extends Command {
+export default class NvimList extends Command {
   static listColorschemes(nvim: Neovim) {
     return nvim.call("getcompletion", ["", "color"])
   }
@@ -28,4 +28,4 @@ export default class ListColorschemes extends Command {
   }
 }
 
-export const listColorschemes = ListColorschemes.listColorschemes
+export const listColorschemes = NvimList.listColorschemes
