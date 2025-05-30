@@ -4,7 +4,7 @@ import { extractColors } from "./extract-colors"
 import { HlGroupsHex } from "../types"
 import fs from "fs"
 import path from "path"
-import os from "os"
+import { prepareThemesDirectory } from "../utils/ghostty"
 
 export default class ToGhost extends Command {
   static description = "Convert a Neovim colorscheme to Ghostty theme format"
@@ -15,24 +15,6 @@ export default class ToGhost extends Command {
       description: "Name of colorscheme to convert",
       required: true,
     }),
-  }
-
-  public static prepareThemesDirectory(): string {
-    const xdgConfigDir =
-      process.env.XDG_CONFIG_DIR || path.join(os.homedir(), ".config")
-    const ghosttyDir = path.join(xdgConfigDir, "ghostty", "themes")
-    if (!fs.existsSync(ghosttyDir)) {
-      fs.mkdirSync(ghosttyDir, { recursive: true })
-    }
-    return ghosttyDir
-  }
-
-  private static openFile(
-    ghosttyDir: string,
-    colorscheme: string,
-  ): fs.WriteStream {
-    const themePath = path.join(ghosttyDir, colorscheme)
-    return fs.createWriteStream(themePath)
   }
 
   private static writeTheme(
@@ -126,8 +108,9 @@ export default class ToGhost extends Command {
         format: "hex",
       })) as HlGroupsHex
 
-      const ghosttyDir = ToGhost.prepareThemesDirectory()
-      file = ToGhost.openFile(ghosttyDir, args.colorscheme)
+      const ghosttyDir = prepareThemesDirectory()
+      const themePath = path.join(ghosttyDir, args.colorscheme)
+      file = fs.createWriteStream(themePath)
       ToGhost.writeTheme(file, args.colorscheme, hlGroups)
 
       console.log(

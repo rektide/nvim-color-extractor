@@ -2,9 +2,9 @@ import { Command } from "@oclif/core"
 import { listColorschemes } from "./list-colorschemes"
 import { createNvim } from "../utils/nvim"
 import ToGhost from "./to-ghost"
+import { prepareThemesDirectory } from "../utils/ghostty"
 import fs from "fs"
 import path from "path"
-import os from "os"
 
 export default class RandomTheme extends Command {
   static description =
@@ -26,7 +26,7 @@ export default class RandomTheme extends Command {
       console.log(`Selected random colorscheme: ${randomScheme}`)
 
       // Check if theme already exists in Ghostty's directory
-      const ghosttyDir = ToGhost.prepareThemesDirectory()
+      const ghosttyDir = prepareThemesDirectory()
       const themePath = path.join(ghosttyDir, randomScheme)
 
       if (fs.existsSync(themePath)) {
