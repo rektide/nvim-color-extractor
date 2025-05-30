@@ -13,7 +13,7 @@ export interface HighlightAttrs<T = number> {
 
 export type RGB = [number, number, number]
 export type Hex = string
-export type ColorFormat = 'num' | 'hex' | 'rgb' | undefined
+export type ColorFormat = "num" | "hex" | "rgb" | undefined
 
 export type HlGroups<T = number> = Record<string, HighlightAttrs<T>>
 export type HlGroupsNum = HlGroups<number>
