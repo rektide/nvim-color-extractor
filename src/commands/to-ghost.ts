@@ -51,10 +51,16 @@ export default class ToGhost extends Command {
       themeContent += `background = #000000\n`
       themeContent += `cursor = ${getRandomColor(colors)}\n\n`
 
-      // Add some sample color definitions
-      const colorArray = Array.from(colors)
-      for (let i = 0; i < Math.min(16, colorArray.length); i++) {
-        themeContent += `palette = {i}=${colorArray[i]}\n`
+      // Create palette with random unique colors
+      const availableColors = Array.from(colors)
+      for (let i = 0; i < Math.min(16, availableColors.length); i++) {
+        if (availableColors.length === 0) {
+          throw new Error('Not enough unique colors for palette')
+        }
+        const randomIndex = Math.floor(Math.random() * availableColors.length)
+        const color = availableColors[randomIndex]
+        themeContent += `palette = ${i}=${color}\n`
+        availableColors.splice(randomIndex, 1) // Remove used color
       }
 
       // Ensure Ghostty config directory exists
