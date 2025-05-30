@@ -58,8 +58,15 @@ export default class ToGhost extends Command {
     // Collect all unique foreground colors with no background
     const colors = new Set<string>()
     for (const [groupName, group] of Object.entries(hlGroups)) {
-      if (group.fg && !group.bg) {
+      if (group.bg) {
+        // assuming for now these wont contrast adequately versus the default background
+        continue
+      }
+      if (group.fg) {
         colors.add(group.fg)
+      }
+      if (group.sp) {
+        colors.add(group.sp)
       }
     }
 
