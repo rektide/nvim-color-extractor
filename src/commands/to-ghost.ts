@@ -6,11 +6,6 @@ import fs from "fs"
 import path from "path"
 import os from "os"
 
-function getRandomColor(colors: Set<string>): string {
-  const arr = Array.from(colors)
-  return arr[Math.floor(Math.random() * arr.length)]
-}
-
 export default class ToGhost extends Command {
   static description = "Convert a Neovim colorscheme to Ghostty theme format"
   static examples = ["<%= config.bin %> <%= command.id %> gruvbox"]
@@ -41,27 +36,33 @@ export default class ToGhost extends Command {
     colorscheme: string,
     hlGroups: HlGroupsHex
   ): void {
-    // Collect all unique foreground colors
+    // Validate Normal group exists and has required colors
+    const normalGroup = hlGroups.Normal
+    if (!normalGroup) {
+      throw new Error("Colorscheme has no Normal highlight group")
+    }
+    if (!normalGroup.fg || !normalGroup.bg) {
+      throw new Error("Normal group must have both foreground and background colors")
+    }
+
+    // Collect all unique foreground colors except Normal's
     const colors = new Set<string>()
-    for (const group of Object.values(hlGroups)) {
-      if (group.fg) colors.add(group.fg)
+    for (const [groupName, group] of Object.entries(hlGroups)) {
+      if (groupName !== "Normal" && group.fg) {
+        colors.add(group.fg)
+      }
     }
 
-    if (colors.size === 0) {
-      file.end()
-      throw new Error("No colors found in colorscheme")
-    }
-    // Write header
+    // Write header using Normal group colors
     file.write(`# ${colorscheme} theme generated from Neovim colorscheme\n\n`)
-    file.write(`foreground = ${getRandomColor(colors)}\n`)
-    file.write(`background = #000000\n`)
-    file.write(`cursor = ${getRandomColor(colors)}\n\n`)
+    file.write(`foreground = ${normalGroup.fg}\n`)
+    file.write(`background = ${normalGroup.bg}\n`)
+    file.write(`cursor = ${normalGroup.fg}\n\n`)
 
-    // Create palette with random unique colors
+    // Create palette with remaining colors (excluding Normal's)
     const availableColors = Array.from(colors)
     for (let i = 0; i < Math.min(16, availableColors.length); i++) {
       if (availableColors.length === 0) {
-        file.end()
         throw new Error('Not enough unique colors for palette')
       }
       const randomIndex = Math.floor(Math.random() * availableColors.length)
@@ -69,13 +70,12 @@ export default class ToGhost extends Command {
       file.write(`palette = ${i}=${color}\n`)
       availableColors.splice(randomIndex, 1) // Remove used color
     }
-
-    file.end()
   }
 
   public async run(): Promise<void> {
     const { args } = await this.parse(ToGhost)
     let nvim
+    let file: fs.WriteStream | undefined
 
     try {
       nvim = await createNvim()
@@ -87,13 +87,14 @@ export default class ToGhost extends Command {
       })) as HlGroupsHex
 
       const ghosttyDir = ToGhost.prepareThemesDirectory()
-      const file = ToGhost.openFile(ghosttyDir, args.colorscheme)
+      file = ToGhost.openFile(ghosttyDir, args.colorscheme)
       ToGhost.writeTheme(file, args.colorscheme, hlGroups)
 
       console.log(`Successfully created Ghostty theme at: ${path.join(ghosttyDir, args.colorscheme)}`)
     } catch (error) {
       console.error(`Failed to create Ghostty theme: ${error}`, { exit: 1 })
     } finally {
+      file?.end()
       nvim?.quit()
     }
   }
