@@ -1,4 +1,4 @@
-import { Command } from "@oclif/core"
+import { Args, Command } from "@oclif/core"
 import { createNvim } from "../utils/nvim"
 import { extractColors } from "./extract-colors"
 import { HlGroupsHex } from "../types"
@@ -30,10 +30,10 @@ export default class ToGhost extends Command {
       nvim = await createNvim()
 
       // Extract colors in hex format
-      const hlGroups = await extractColors(args.colorscheme, {
+      const hlGroups = (await extractColors(args.colorscheme, {
         nvim,
         format: "hex",
-      }) as HlGroupsHex
+      })) as HlGroupsHex
 
       // Collect all unique foreground colors
       const colors = new Set<string>()
@@ -54,24 +54,26 @@ export default class ToGhost extends Command {
       // Add some sample color definitions
       const colorArray = Array.from(colors)
       for (let i = 0; i < Math.min(16, colorArray.length); i++) {
-        themeContent += `color${i} = ${colorArray[i]}\n`
+        themeContent += `palette = {i}=${colorArray[i]}\n`
       }
 
       // Ensure Ghostty config directory exists
-      const ghosttyDir = path.join(os.homedir(), ".config", "ghostty")
+      const xdgConfigDir =
+        process.env.XDG_CONFIG_DIR || path.join(os.homedir(), ".config")
+      const ghosttyDir = path.join(xdgConfigDir, "ghostty", "themes")
       if (!fs.existsSync(ghosttyDir)) {
         fs.mkdirSync(ghosttyDir, { recursive: true })
       }
 
       // Write theme file
-      const themePath = path.join(ghosttyDir, `${args.colorscheme}.conf`)
+      const themePath = path.join(ghosttyDir, args.colorscheme)
       fs.writeFileSync(themePath, themeContent)
 
-      this.log(`Successfully created Ghostty theme at: ${themePath}`)
+      console.log(`Successfully created Ghostty theme at: ${themePath}`)
     } catch (error) {
-      this.error(`Failed to create Ghostty theme: ${error}`, { exit: 1 })
+      console.error(`Failed to create Ghostty theme: ${error}`, { exit: 1 })
     } finally {
-      nvim?.quit()
     }
+    nvim?.quit()
   }
 }
