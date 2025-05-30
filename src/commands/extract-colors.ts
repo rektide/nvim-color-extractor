@@ -57,7 +57,7 @@ export default class ExtractColors extends Command {
 
       console.log(JSON.stringify(hlGroups, null, "\t"))
     } catch (error) {
-      this.error(`Failed to extract colors: ${error}`, { exit: 1 })
+      console.error(`Failed to extract colors: ${error}`, { exit: 1 })
     }
     nvim?.quit()
   }

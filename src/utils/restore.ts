@@ -5,33 +5,33 @@ import { HlGroupsNum } from "../types"
 
 function jsToLua(obj: any): string {
   if (obj === null || obj === undefined) {
-    return 'nil'
+    return "nil"
   }
-  if (typeof obj === 'boolean') {
-    return obj ? 'true' : 'false'
+  if (typeof obj === "boolean") {
+    return obj ? "true" : "false"
   }
-  if (typeof obj === 'number') {
+  if (typeof obj === "number") {
     return obj.toString()
   }
-  if (typeof obj === 'string') {
+  if (typeof obj === "string") {
     return `'${obj.replace(/'/g, "\\'")}'`
   }
   if (Array.isArray(obj)) {
-    return `{${obj.map(jsToLua).join(', ')}}`
+    return `{${obj.map(jsToLua).join(", ")}}`
   }
-  if (typeof obj === 'object') {
+  if (typeof obj === "object") {
     const entries = []
     for (const [key, value] of Object.entries(obj)) {
       entries.push(`${key} = ${jsToLua(value)}`)
     }
-    return `{${entries.join(', ')}}`
+    return `{${entries.join(", ")}}`
   }
-  return 'nil'
+  return "nil"
 }
 
 export async function buildRestoreColors(nvim: Neovim): Promise<void> {
   // Get current colors in numeric format
-  const colors = await extractColors(false, { nvim, format: 'num' })
+  const colors = await extractColors(false, { nvim, format: "num" })
 
   // Build lua function that:
   // 1. First clears all highlight groups
@@ -51,7 +51,7 @@ export async function buildRestoreColors(nvim: Neovim): Promise<void> {
     luaLines.push(`vim.api.nvim_set_hl(0, '${group}', ${luaAttrs})`)
   }
 
-  const body = luaLines.join('\n')
+  const body = luaLines.join("\n")
   await defineLuaFunction(nvim, "restore_colors", body)
 }
 

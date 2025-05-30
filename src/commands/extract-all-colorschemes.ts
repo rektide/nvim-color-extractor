@@ -24,7 +24,7 @@ export default class ExtractAllColorschemes extends Command {
 
       for (const name of schemes) {
         try {
-          this.log(`Extracting ${name}...`)
+          console.log(`Extracting ${name}...`)
 
           // Extract colors for this scheme
           const colors = await extractColors(name, { nvim, format: "hex" })
@@ -35,7 +35,7 @@ export default class ExtractAllColorschemes extends Command {
             colors,
           }
         } catch (error) {
-          this.log(`Error extracting ${name}: ${error}`)
+          console.error(`Error extracting ${name}: ${error}`)
         } finally {
           // Restore to original colors
           await restoreColors(nvim)
@@ -43,9 +43,9 @@ export default class ExtractAllColorschemes extends Command {
       }
 
       // Output all results as JSON
-      this.log(JSON.stringify(results, null, 2))
+      console.log(JSON.stringify(results, null, 2))
     } catch (error) {
-      this.error(`Failed to extract colorschemes: ${error}`, { exit: 1 })
+      console.error(`Failed to extract colorschemes: ${error}`, { exit: 1 })
     } finally {
       nvim?.quit()
     }
