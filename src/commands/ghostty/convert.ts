@@ -1,6 +1,6 @@
 import { Args, Command } from "@oclif/core"
 import { createNvim } from "../utils/nvim"
-import { extractColors } from "./extract-colors"
+import { extractColors } from "../nvim/extract"
 import { HlGroupsHex } from "../types"
 import fs from "fs"
 import path from "path"

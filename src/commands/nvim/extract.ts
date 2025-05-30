@@ -1,5 +1,5 @@
 import { Args, Command } from "@oclif/core"
-import { createNvim } from "../utils/nvim"
+import { createNvim } from "../../utils/nvim"
 import type { Zalgo, HlGroups, HlGroupsNum, ColorFormat } from "../types"
 import { type Neovim } from "neovim"
 import { toColorFormat } from "../utils/colors"

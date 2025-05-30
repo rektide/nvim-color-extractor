@@ -1,5 +1,5 @@
 import { type Neovim } from "neovim"
-import { extractColors } from "../commands/extract-colors"
+import { extractColors } from "../commands/nvim/extract"
 import { defineLuaFunction } from "./nvim"
 import { HlGroupsNum } from "../types"
 
