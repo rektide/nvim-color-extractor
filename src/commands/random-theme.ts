@@ -37,16 +37,15 @@ export default class RandomTheme extends Command {
       }
 
       // Update Ghostty config to use this theme
-      await this.updateGhosttyConfig(randomScheme)
+      await this.updateGhosttyConfig(randomScheme, ghosttyDir)
     } catch (error) {
       console.error(`Failed to create random theme: ${error}`, { exit: 1 })
     }
     nvim?.quit()
   }
 
-  private async updateGhosttyConfig(themeName: string): Promise<void> {
-    const xdgConfigDir = process.env.XDG_CONFIG_DIR || path.join(os.homedir(), ".config")
-    const configPath = path.join(xdgConfigDir, "ghostty", "config")
+  private async updateGhosttyConfig(colorscheme: string, ghosttyDir: string): Promise<void> {
+    const configPath = path.join(path.dirname(ghosttyDir), "config")
     
     try {
       let configContent = ""
@@ -62,10 +61,10 @@ export default class RandomTheme extends Command {
       }
 
       // Append new theme setting
-      configContent += `\ntheme = ${themeName}\n`
+      configContent += `\ntheme = ${colorscheme}\n`
 
       await fs.promises.writeFile(configPath, configContent)
-      console.log(`Updated Ghostty config at ${configPath} to use theme: ${themeName}`)
+      console.log(`Updated Ghostty config at ${configPath} to use colorscheme: ${colorscheme}`)
     } catch (error) {
       console.error(`Failed to update Ghostty config: ${error}`)
     }
