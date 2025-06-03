@@ -1,31 +1,60 @@
 import fs from "fs/promises"
 import path from "path"
 import os from "os"
+import { GhosttyOptions, Readyable } from "../types.js"
 
-export interface GhosttyDirs {
+export class GhosttyBase implements GhosttyOptions, Readyable<GhosttyBase> {
 	ghosttyDir: string
 	themesDir: string
-}
+	ready: Promise<typeof this>
 
-export async function makeGhosttyDirs(
-	dirs?: Partial<GhosttyDirs>,
-): Promise<GhosttyDirs> {
-	const result = { ...dirs } as GhosttyDirs
+	static default<O extends GhosttyOptions>(
+		base?: Partial<GhosttyOptions>,
+		onto?: Partial<O>,
+	): O {
+		const result = (onto || {}) as GhosttyOptions
 
-	// define any missing directories
-	if (!result.ghosttyDir) {
-		const xdgConfigDir =
-			process.env.XDG_CONFIG_DIR || path.join(os.homedir(), ".config")
-		result.ghosttyDir = path.join(xdgConfigDir, "ghostty")
+		result.ghosttyDir = base?.ghosttyDir as string
+		if (!result.ghosttyDir) {
+			const xdgConfigDir =
+				process.env.XDG_CONFIG_DIR || path.join(os.homedir(), ".config")
+			result.ghosttyDir = path.join(xdgConfigDir, "ghostty")
+		}
+
+		result.themesDir = base?.themesDir as string
+		if (!result.themesDir) {
+			result.themesDir = path.join(result.ghosttyDir, "themes")
+		}
+
+		return result as O
 	}
-	if (!result.themesDir) {
-		result.themesDir = path.join(result.ghosttyDir, "themes")
+
+	static async mkdirs<O extends GhosttyOptions>(dirs: Partial<O> = {}) {
+		const mkdirs = []
+
+		const { ghosttyDir, themesDir } = dirs
+		if (ghosttyDir) {
+			mkdirs.push(ghosttyDir)
+		}
+		if (themesDir) {
+			mkdirs.push(themesDir)
+		}
+
+		const mkAll = mkdirs.map((dir) => fs.mkdir(dir, { recursive: true }))
+		await Promise.all(mkAll)
+
+		return dirs
 	}
 
-	// insure all directories are created
-	const allDirs = [result.ghosttyDir, result.themesDir]
-	const mkAll = allDirs.map((dir) => fs.mkdir(dir, { recursive: true }))
-	await Promise.all(mkAll)
+	static async ready<G extends GhosttyBase>(self: G) {
+		await GhosttyBase.mkdirs(self)
+		return self
+	}
 
-	return result
+	constructor(base?: Partial<GhosttyOptions>) {
+		this.ghosttyDir = null as unknown as string
+		this.themesDir = null as unknown as string
+		GhosttyBase.default(base, this)
+		this.ready = GhosttyBase.ready(this)
+	}
 }

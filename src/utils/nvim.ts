@@ -2,6 +2,7 @@ import * as child_process from "node:child_process"
 import { attach, findNvim, type Neovim } from "neovim"
 
 import { getLogger } from "neovim/lib/utils/logger.js"
+import type { NvimOptions, Readyable, Zalgo, ZNvimOptions } from "../types.ts"
 
 export async function createNvim(): Promise<Neovim> {
 	loggerHack()
@@ -13,6 +14,36 @@ export async function createNvim(): Promise<Neovim> {
 		{},
 	)
 	return attach({ proc })
+}
+
+export class NvimBase implements ZNvimOptions, Readyable<NvimBase> {
+	public nvim: Zalgo<Neovim>
+	public ready: Promise<typeof this>
+
+	static default(
+		base?: Partial<ZNvimOptions>,
+		onto?: Partial<ZNvimOptions>,
+	): ZNvimOptions {
+		const result = (onto ?? {}) as ZNvimOptions
+		result.nvim = base?.nvim ?? createNvim()
+		return result
+	}
+
+	static async ready<N extends NvimBase>(self: N) {
+		const nvim = self.nvim
+		self.nvim = nvim
+		return self
+	}
+
+	constructor(base?: Partial<ZNvimOptions>) {
+		this.nvim = null as unknown as Promise<Neovim>
+		NvimBase.default(base, this)
+		this.ready = NvimBase.ready(this)
+	}
+
+	async cleanup() {
+		;(await this.nvim)?.quit()
+	}
 }
 
 /**

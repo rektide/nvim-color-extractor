@@ -2,37 +2,13 @@
 import fs from "node:fs"
 import path from "node:path"
 import { Args, Command } from "@oclif/core"
-import { Neovim } from "neovim"
 
 import type { HlGroupsHex } from "../../types.ts"
+import { NvimGhosttyBase } from "../../utils/nvim-ghostty.ts"
 import { extractColors } from "../nvim/extract.ts"
-import { makeGhosttyDirs } from "../../utils/ghostty.ts"
-import { createNvim } from "../../utils/nvim.ts"
 
-export class GhosttyConverter {
-	private nvim: Neovim
-	private ghosttyDir: string
-	private themesDir: string
-
-	constructor(
-		public readonly colorscheme: string,
-		private existingDirs?: { ghosttyDir?: string; themesDir?: string },
-	) {}
-
-	public async initialize(): Promise<void> {
-		this.nvim = await createNvim()
-
-		if (!this.existingDirs?.ghosttyDir || !this.existingDirs?.themesDir) {
-			const dirs = await makeGhosttyDirs(this.existingDirs)
-			this.ghosttyDir = dirs.ghosttyDir
-			this.themesDir = dirs.themesDir
-		} else {
-			this.ghosttyDir = this.existingDirs.ghosttyDir
-			this.themesDir = this.existingDirs.themesDir
-		}
-	}
-
-	private writeTheme(file: fs.WriteStream, hlGroups: HlGroupsHex): void {
+export class GhosttyConverter extends NvimGhosttyBase {
+	public static writeTheme(file: fs.WriteStream, hlGroups: HlGroupsHex): void {
 		// Validate groups exists and have required colors
 		const normalGroup = hlGroups.Normal
 		const cursorGroup = hlGroups.Cursor
@@ -104,29 +80,31 @@ export class GhosttyConverter {
 		}
 	}
 
-	public async convert(): Promise<void> {
+	public async convert(colorscheme: string): Promise<void> {
 		let file: fs.WriteStream | undefined
 		let themePath: string | undefined
 		try {
 			// Extract colors in hex format
-			const hlGroups = (await extractColors(this.colorscheme, {
+			const hlGroups = (await extractColors(colorscheme, {
 				nvim: this.nvim,
 				format: "hex",
 			})) as HlGroupsHex
 
 			// Write theme
-			themePath = path.join(this.ghosttyDir, this.colorscheme)
-			file = fs.createWriteStream(themePath)
-			this.writeTheme(file, hlGroups)
+			themePath = path.join(this.ghosttyDir, colorscheme)
+			file = fs.createWriteStream(themePath, { flags: "ax" })
+			GhosttyConverter.writeTheme(file, hlGroups)
 
 			console.log(`Successfully created Ghostty theme at: ${themePath}`)
 		} finally {
-			file?.end()
+			if (file) {
+				file.end()
+				if (themePath) {
+					// cleanup bad file
+					await fs.promises.rm(themePath)
+				}
+			}
 		}
-	}
-
-	public async cleanup(): Promise<void> {
-		this.nvim?.quit()
 	}
 }
 
@@ -143,11 +121,10 @@ export default class GhosttyConvert extends Command {
 
 	public async run(): Promise<void> {
 		const { args } = await this.parse(GhosttyConvert)
-		const converter = new GhosttyConverter(args.colorscheme)
+		const converter = new GhosttyConverter()
 
 		try {
-			await converter.initialize()
-			await converter.convert()
+			await converter.convert(args.colorscheme)
 		} catch (err) {
 			console.error(`Failed to create Ghostty theme: ${err}`)
 			throw err
