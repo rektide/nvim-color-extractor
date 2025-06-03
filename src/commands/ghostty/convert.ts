@@ -5,8 +5,13 @@ import { Args, Command } from "@oclif/core"
 
 import type { HlGroupsHex } from "../../types.ts"
 import { extractColors } from "../nvim/extract.ts"
-import { makeGhosttyDirs } from "../../utils/ghostty.ts"
+import { makeGhosttyDirs, type GhosttyDirs } from "../../utils/ghostty.ts"
 import { createNvim } from "../../utils/nvim.ts"
+
+export interface GhosttyConvertState extends GhosttyDirs {
+	nvim: Neovim
+	colorscheme: string
+}
 
 export default class GhosttyConvert extends Command {
 	static description = "Convert a Neovim colorscheme to Ghostty theme format"
@@ -17,6 +22,23 @@ export default class GhosttyConvert extends Command {
 			description: "Name of colorscheme to convert",
 			required: true,
 		}),
+	}
+
+	private async makeState(
+		args: { colorscheme: string },
+		base?: Partial<GhosttyConvertState>,
+	): Promise<GhosttyConvertState> {
+		const result = { ...base } as GhosttyConvertState
+		result.nvim ??= await createNvim()
+		result.colorscheme = args.colorscheme
+
+		if (!(result.ghosttyDir)) {
+			const dirs = await makeGhosttyDirs(result)
+			result.ghosttyDir = dirs.ghosttyDir
+			result.themesDir = dirs.themesDir
+		}
+
+		return result
 	}
 
 	private static writeTheme(
@@ -96,34 +118,39 @@ export default class GhosttyConvert extends Command {
 		}
 	}
 
-	public async run(): Promise<void> {
-		const { args } = await this.parse(GhosttyConvert)
-		let nvim
+	private async convert(state: GhosttyConvertState): Promise<void> {
 		let file: fs.WriteStream | undefined
-
 		try {
-			nvim = await createNvim()
-
 			// Extract colors in hex format
-			const hlGroups = (await extractColors(args.colorscheme, {
-				nvim,
+			const hlGroups = (await extractColors(state.colorscheme, {
+				nvim: state.nvim,
 				format: "hex",
 			})) as HlGroupsHex
 
-			const { ghosttyDir } = await makeGhosttyDirs()
-			const themePath = path.join(ghosttyDir, args.colorscheme)
+			const themePath = path.join(state.ghosttyDir, state.colorscheme)
 			file = fs.createWriteStream(themePath)
-			GhosttyConvert.writeTheme(file, args.colorscheme, hlGroups)
+			GhosttyConvert.writeTheme(file, state.colorscheme, hlGroups)
 
 			console.log(
-				`Successfully created Ghostty theme at: ${path.join(ghosttyDir, args.colorscheme)}`,
+				`Successfully created Ghostty theme at: ${path.join(state.ghosttyDir, state.colorscheme)}`,
 			)
+		} finally {
+			file?.end()
+		}
+	}
+
+	public async run(): Promise<void> {
+		const { args } = await this.parse(GhosttyConvert)
+		let state: GhosttyConvertState | undefined
+
+		try {
+			state = await this.makeState(args)
+			await this.convert(state)
 		} catch (err) {
 			console.error(`Failed to create Ghostty theme: ${err}`)
 			throw err
 		} finally {
-			file?.end()
-			nvim?.quit()
+			state?.nvim?.quit()
 		}
 	}
 }
