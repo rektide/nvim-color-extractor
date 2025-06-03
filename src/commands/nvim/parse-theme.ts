@@ -45,6 +45,6 @@ export default class NvimParseTheme extends Command {
 	}
 }
 
-if (require.main === module) {
+if (import.meta.url === `file://${process.argv[1]}`) {
 	NvimParseTheme.run()
 }

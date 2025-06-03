@@ -126,6 +126,6 @@ export default class GhosttyConvert extends Command {
 	}
 }
 
-if (require.main === module) {
+if (import.meta.url === `file://${process.argv[1]}`) {
 	GhosttyConvert.run()
 }

@@ -28,7 +28,7 @@ export default class NvimList extends Command {
 	}
 }
 
-if (require.main === module) {
+if (import.meta.url === `file://${process.argv[1]}`) {
 	NvimList.run()
 }
 

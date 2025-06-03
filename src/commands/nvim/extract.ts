@@ -74,7 +74,7 @@ export default class NvimExtract extends Command {
 	}
 }
 
-if (require.main === module) {
+if (import.meta.url === `file://${process.argv[1]}`) {
 	NvimExtract.run()
 }
 

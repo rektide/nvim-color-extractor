@@ -21,6 +21,6 @@ export default class GhosttyExec extends Command {
 	}
 }
 
-if (require.main === module) {
+if (import.meta.url === `file://${process.argv[1]}`) {
 	GhosttyExec.run()
 }
