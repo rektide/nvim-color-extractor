@@ -1,5 +1,5 @@
 #!/usr/bin/env -S node --experimental-strip-types
-import fs from "node:fs"
+import fs from "node:fs/promises"
 import path from "node:path"
 import { Command } from "@oclif/core"
 import type { Neovim } from "neovim"
@@ -7,9 +7,14 @@ import type { Neovim } from "neovim"
 import type { Zalgo } from "../../types.js"
 import { listColorschemes } from "../nvim/list.ts"
 import { retryFlag } from "../../utils/flags.ts"
-import { prepareThemesDirectory } from "../../utils/ghostty.ts"
+import { type GhosttyDirs, makeGhosttyDirs } from "../../utils/ghostty.ts"
 import { createNvim } from "../../utils/nvim.ts"
 import GhosttyConvert from "./convert.ts"
+
+export interface GhosttyRandomState extends GhosttyDirs {
+	nvim: Neovim
+	schemes: Array<string>
+}
 
 export default class GhosttyRandom extends Command {
 	static description =
@@ -20,19 +25,44 @@ export default class GhosttyRandom extends Command {
 		retry: retryFlag,
 	}
 
-	private async pickAndExtract({
-		nvim = createNvim(),
-		schemes,
-	}: {
-		nvim: Zalgo<Neovim>
-		schemes?: Array<string>
-	}): Promise<string> {
-		nvim = await nvim
+	private async makeState(
+		base?: Partial<GhosttyRandomState>,
+	): Promise<GhosttyRandomState> {
+		const result = { ...base } as GhosttyRandomState
+		result.nvim ??= await createNvim()
+
+		const pending = []
+		let schemes = result.schemes
 		if (!schemes) {
-			schemes = await listColorschemes(nvim)
+			const buildSchemes = listColorschemes(result.nvim).then(
+				(schemes) => (result.schemes = schemes),
+			)
+			pending.push(buildSchemes)
+		}
+		if (!(result.ghosttyDir && result.themesDir)) {
+			const buildDirs = makeGhosttyDirs(result).then((dirs: GhosttyDirs) => {
+				result.ghosttyDir = dirs.ghosttyDir
+				result.themesDir = dirs.themesDir
+			})
+			pending.push(buildDirs)
 		}
 
+		await Promise.all(pending)
+		return result
+	}
+
+	private async pickAndExtract(
+		state?: Partial<GhosttyRandomState>,
+	): Promise<string> {
+		let nvim
 		try {
+			const {
+				ghosttyDir,
+				nvim: nvim2,
+				schemes,
+				themesDir,
+			} = await this.makeState(state)
+			nvim = nvim2
 			if (schemes?.length === 0) {
 				throw new Error("No colorschemes found")
 			}
@@ -42,15 +72,22 @@ export default class GhosttyRandom extends Command {
 			console.log(`Selected random colorscheme: ${randomScheme}`)
 
 			// Check if theme already exists in Ghostty's directory
-			const ghosttyDir = prepareThemesDirectory()
-			const themePath = path.join(ghosttyDir, randomScheme)
-
-			if (fs.existsSync(themePath)) {
-				console.log(`Theme ${randomScheme} already exists at ${themePath}`)
-			} else {
-				// Convert using existing ToGhost command
-				await GhosttyConvert.run([randomScheme])
+			let stat
+			try {
+				stat = await fs.stat(themesDir)
+				if (!stat.isDirectory()) {
+					throw new Error(
+						`Ghostty themes directory isn't a directory: ${themesDir}`,
+					)
+				}
+				console.log(`Theme ${randomScheme} already exists at ${themesDir}`)
+			} catch (err) {
+				if (stat) {
+					throw err
+				}
 			}
+			// Convert using existing ToGhost command
+			await GhosttyConvert.run([randomScheme])
 
 			// Update Ghostty config to use this theme
 			await this.updateGhosttyConfig(randomScheme, ghosttyDir)
@@ -63,13 +100,11 @@ export default class GhosttyRandom extends Command {
 	public async run(): Promise<void> {
 		const { flags } = await this.parse(GhosttyRandom)
 
-		const nvim = await createNvim()
-		const schemes = await listColorschemes(nvim)
+		const state = await this.makeState()
 
 		for (let attempt = 1; attempt <= flags.retry; attempt++) {
-			console.log({ attempt })
 			try {
-				await this.pickAndExtract({ nvim, schemes })
+				await this.pickAndExtract(state)
 				return // Success - exit the retry loop
 			} catch (err) {
 				console.error(`Attempt ${attempt}/${flags.retry} failed: ${err}`)
@@ -83,14 +118,18 @@ export default class GhosttyRandom extends Command {
 
 	public async updateGhosttyConfig(
 		colorscheme: string,
-		ghosttyDir: string = prepareThemesDirectory(),
+		ghosttyDir?: string,
 	): Promise<void> {
+		if (!ghosttyDir) {
+			ghosttyDir = (await makeGhosttyDirs()).ghosttyDir
+		}
+
 		const configPath = path.join(path.dirname(ghosttyDir), "config")
 
 		try {
 			let configContent = ""
 			try {
-				configContent = await fs.promises.readFile(configPath, "utf-8")
+				configContent = await fs.readFile(configPath, "utf-8")
 				// Comment out any existing theme lines
 				configContent = configContent.replace(/^theme\s*=/gm, "# theme =")
 			} catch (error) {
@@ -104,7 +143,7 @@ export default class GhosttyRandom extends Command {
 			const sep = configContent.length ? "\n" : ""
 			configContent += `${sep}theme = ${colorscheme}\n`
 
-			await fs.promises.writeFile(configPath, configContent)
+			await fs.writeFile(configPath, configContent)
 			console.log(
 				`Updated Ghostty config at ${configPath} to use colorscheme: ${colorscheme}`,
 			)

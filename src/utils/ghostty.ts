@@ -1,13 +1,31 @@
-import fs from "fs"
+import fs from "fs/promises"
 import path from "path"
 import os from "os"
 
-export function prepareThemesDirectory(): string {
-	const xdgConfigDir =
-		process.env.XDG_CONFIG_DIR || path.join(os.homedir(), ".config")
-	const ghosttyDir = path.join(xdgConfigDir, "ghostty", "themes")
-	if (!fs.existsSync(ghosttyDir)) {
-		fs.mkdirSync(ghosttyDir, { recursive: true })
+export interface GhosttyDirs {
+	ghosttyDir: string
+	themesDir: string
+}
+
+export async function makeGhosttyDirs(
+	dirs?: Partial<GhosttyDirs>,
+): Promise<GhosttyDirs> {
+	const result = { ...dirs } as GhosttyDirs
+
+	// define any missing directories
+	if (!result.ghosttyDir) {
+		const xdgConfigDir =
+			process.env.XDG_CONFIG_DIR || path.join(os.homedir(), ".config")
+		result.ghosttyDir = path.join(xdgConfigDir, "ghostty")
 	}
-	return ghosttyDir
+	if (!result.themesDir) {
+		result.themesDir = path.join(result.ghosttyDir, "themes")
+	}
+
+	// insure all directories are created
+	const allDirs = [result.ghosttyDir, result.themesDir]
+	const mkAll = allDirs.map((dir) => fs.mkdir(dir, { recursive: true }))
+	await Promise.all(mkAll)
+
+	return result
 }

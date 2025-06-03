@@ -5,7 +5,7 @@ import { Args, Command } from "@oclif/core"
 
 import type { HlGroupsHex } from "../../types.ts"
 import { extractColors } from "../nvim/extract.ts"
-import { prepareThemesDirectory } from "../../utils/ghostty.ts"
+import { makeGhosttyDirs } from "../../utils/ghostty.ts"
 import { createNvim } from "../../utils/nvim.ts"
 
 export default class GhosttyConvert extends Command {
@@ -110,7 +110,7 @@ export default class GhosttyConvert extends Command {
 				format: "hex",
 			})) as HlGroupsHex
 
-			const ghosttyDir = prepareThemesDirectory()
+			const { ghosttyDir } = await makeGhosttyDirs()
 			const themePath = path.join(ghosttyDir, args.colorscheme)
 			file = fs.createWriteStream(themePath)
 			GhosttyConvert.writeTheme(file, args.colorscheme, hlGroups)
