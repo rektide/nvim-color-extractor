@@ -1,14 +1,14 @@
 export type Zalgo<T> = T | Promise<T>
 
 export interface HighlightAttrs<T = number> {
-  fg?: T
-  bg?: T
-  sp?: T
-  bold?: boolean
-  italic?: boolean
-  underline?: boolean
-  undercurl?: boolean
-  reverse?: boolean
+	fg?: T
+	bg?: T
+	sp?: T
+	bold?: boolean
+	italic?: boolean
+	underline?: boolean
+	undercurl?: boolean
+	reverse?: boolean
 }
 
 export type RGB = [number, number, number]

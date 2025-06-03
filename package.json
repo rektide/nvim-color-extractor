@@ -1,47 +1,49 @@
 {
-  "name": "nvim-color-extractor",
-  "version": "1.0.0",
-  "description": "Neovim color scheme extractor and transformer, with ghostty output",
-  "type": "module",
-  "main": "cli.js",
-  "scripts": {
-    "build": "tsc",
-    "start": "ts-node src/index.ts"
-  },
-  "keywords": [
-    "neovim",
-    "theme",
-    "colorscheme",
-    "ghostty"
-  ],
-  "license": "MIT",
-  "author": "rektide de la faye",
-  "repository": {
-    "type": "git",
-    "url": "https://archive.voodoowarez.com/nvim-color-extractor"
-  },
-  "dependencies": {
-    "@oclif/core": "^4.3.0",
-    "neovim": "^5.3.0",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.3.3"
-  },
-  "devDependencies": {
-    "@types/node": "^22.15.29"
-  },
-  "oclif": {
-    "commands": "./src/commands",
-    "bin": "nvim-color-extractor",
-    "topics": {
-      "nvim": {
-        "description": "commands for extracting nvim colorschemes"
-      },
-      "ghostty": {
-        "description": "commands for generating ghostty themes from nvim colorschemes"
-      }
-    }
-  },
-  "engines": {
-    "node": ">=18.0.0"
-  }
+	"name": "nvim-color-extractor",
+	"version": "1.0.0",
+	"description": "Neovim color scheme extractor and transformer, with ghostty output",
+	"type": "module",
+	"main": "cli.js",
+	"scripts": {
+		"format": "prettier -w .",
+		"build": "tsc",
+		"start": "ts-node src/index.ts"
+	},
+	"keywords": [
+		"neovim",
+		"theme",
+		"colorscheme",
+		"ghostty"
+	],
+	"license": "MIT",
+	"author": "rektide de la faye",
+	"repository": {
+		"type": "git",
+		"url": "https://archive.voodoowarez.com/nvim-color-extractor"
+	},
+	"dependencies": {
+		"@oclif/core": "^4.3.0",
+		"neovim": "^5.3.0",
+		"ts-node": "^10.9.2",
+		"typescript": "^5.3.3"
+	},
+	"devDependencies": {
+		"@types/node": "^22.15.29",
+		"prettier": "^3.5.3"
+	},
+	"oclif": {
+		"commands": "./src/commands",
+		"bin": "nvim-color-extractor",
+		"topics": {
+			"nvim": {
+				"description": "commands for extracting nvim colorschemes"
+			},
+			"ghostty": {
+				"description": "commands for generating ghostty themes from nvim colorschemes"
+			}
+		}
+	},
+	"engines": {
+		"node": ">=18.0.0"
+	}
 }

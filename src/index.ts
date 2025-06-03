@@ -3,5 +3,5 @@
 import { run } from "@oclif/core"
 
 run()
-	.then(() => { })
+	.then(() => {})
 	.catch(console.error)
