@@ -1,3 +1,4 @@
+#!/usr/bin/env -S node --experimental-strip-types
 import { Args, Command, Flags } from "@oclif/core"
 import { Neovim } from "neovim"
 import fs from "fs"

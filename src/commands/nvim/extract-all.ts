@@ -1,3 +1,4 @@
+#!/usr/bin/env -S node --experimental-strip-types
 import { Command } from "@oclif/core"
 import { createNvim } from "../../utils/nvim.ts"
 import { buildRestoreColors, restoreColors } from "../../utils/restore.ts"

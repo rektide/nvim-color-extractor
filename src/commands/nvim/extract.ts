@@ -1,3 +1,4 @@
+#!/usr/bin/env -S node --experimental-strip-types
 import { Args, Command } from "@oclif/core"
 import { type Neovim } from "neovim"
 

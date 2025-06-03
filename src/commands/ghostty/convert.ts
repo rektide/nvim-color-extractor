@@ -1,3 +1,4 @@
+#!/usr/bin/env -S node --experimental-strip-types
 import fs from "node:fs"
 import path from "node:path"
 import { Args, Command } from "@oclif/core"
