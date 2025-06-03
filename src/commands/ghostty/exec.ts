@@ -1,7 +1,7 @@
-#!/usr/bin/env -S npx ts-node
+#!/usr/bin/env -S node --experimental-strip-types
 import { Command } from "@oclif/core"
 import process from "node:process"
-import GhosttyRandom from "./random"
+import GhosttyRandom from "./random.ts"
 
 export default class GhosttyExec extends Command {
 	static description = "Pick a random colorscheme and launch Ghostty with it"
