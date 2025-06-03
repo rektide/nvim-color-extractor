@@ -5,9 +5,11 @@
 	"type": "module",
 	"main": "cli.js",
 	"scripts": {
-		"format": "prettier -w .",
 		"build": "tsc",
-		"start": "ts-node src/index.ts"
+		"format": "prettier -w .",
+		"prepare": "husky",
+		"start": "ts-node src/index.ts",
+		"test": "echo no tests yet"
 	},
 	"keywords": [
 		"neovim",
@@ -29,6 +31,7 @@
 	},
 	"devDependencies": {
 		"@types/node": "^22.15.29",
+		"husky": "^9.1.7",
 		"prettier": "^3.5.3"
 	},
 	"oclif": {
