@@ -4,7 +4,7 @@ import { createNvim } from "../../utils/nvim.ts"
 import { Neovim } from "neovim"
 
 export default class NvimList extends Command {
-	static listColorschemes(nvim: Neovim) {
+	static listColorschemes(nvim: Neovim): Promise<Array<string>> {
 		return nvim.call("getcompletion", ["", "color"])
 	}
 

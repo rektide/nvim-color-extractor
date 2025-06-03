@@ -118,8 +118,9 @@ export default class GhosttyConvert extends Command {
 			console.log(
 				`Successfully created Ghostty theme at: ${path.join(ghosttyDir, args.colorscheme)}`,
 			)
-		} catch (error) {
-			console.error(`Failed to create Ghostty theme: ${error}`, { exit: 1 })
+		} catch (err) {
+			console.error(`Failed to create Ghostty theme: ${err}`)
+			throw err
 		} finally {
 			file?.end()
 			nvim?.quit()

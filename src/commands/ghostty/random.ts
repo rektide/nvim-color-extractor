@@ -5,10 +5,10 @@ import { Command } from "@oclif/core"
 import type { Neovim } from "neovim"
 
 import type { Zalgo } from "../../types.js"
+import { listColorschemes } from "../nvim/list.ts"
 import { retryFlag } from "../../utils/flags.ts"
 import { prepareThemesDirectory } from "../../utils/ghostty.ts"
 import { createNvim } from "../../utils/nvim.ts"
-import { listColorschemes } from "../nvim/list.ts"
 import GhosttyConvert from "./convert.ts"
 
 export default class GhosttyRandom extends Command {
@@ -20,14 +20,20 @@ export default class GhosttyRandom extends Command {
 		retry: retryFlag,
 	}
 
-	private async pickAndExtract(
-		nvim: Zalgo<Neovim> = createNvim(),
-	): Promise<string> {
+	private async pickAndExtract({
+		nvim = createNvim(),
+		schemes,
+	}: {
+		nvim: Zalgo<Neovim>
+		schemes?: Array<string>
+	}): Promise<string> {
 		nvim = await nvim
-		try {
-			const schemes = await listColorschemes(nvim)
+		if (!schemes) {
+			schemes = await listColorschemes(nvim)
+		}
 
-			if (schemes.length === 0) {
+		try {
+			if (schemes?.length === 0) {
 				throw new Error("No colorschemes found")
 			}
 
@@ -57,14 +63,18 @@ export default class GhosttyRandom extends Command {
 	public async run(): Promise<void> {
 		const { flags } = await this.parse(GhosttyRandom)
 
-		const nvim = createNvim()
+		const nvim = await createNvim()
+		const schemes = await listColorschemes(nvim)
+
 		for (let attempt = 1; attempt <= flags.retry; attempt++) {
+			console.log({ attempt })
 			try {
-				await this.pickAndExtract(nvim)
+				await this.pickAndExtract({ nvim, schemes })
 				return // Success - exit the retry loop
 			} catch (err) {
 				console.error(`Attempt ${attempt}/${flags.retry} failed: ${err}`)
 				if (attempt === flags.retry) {
+					console.error("Throwing")
 					throw err
 				}
 			}
