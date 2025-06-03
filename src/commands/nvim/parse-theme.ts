@@ -44,3 +44,7 @@ export default class NvimParseTheme extends Command {
     }
   }
 }
+
+if (require.main === module) {
+  NvimParseTheme.run()
+}

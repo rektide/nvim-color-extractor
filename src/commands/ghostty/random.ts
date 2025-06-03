@@ -77,3 +77,7 @@ export default class GhosttyRandom extends Command {
     }
   }
 }
+
+if (require.main === module) {
+  GhosttyRandom.run()
+}

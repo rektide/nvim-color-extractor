@@ -47,3 +47,7 @@ export default class NvimExtractAll extends Command {
     }
   }
 }
+
+if (require.main === module) {
+  NvimExtractAll.run()
+}

@@ -125,3 +125,7 @@ export default class GhosttyConvert extends Command {
     }
   }
 }
+
+if (require.main === module) {
+  GhosttyConvert.run()
+}

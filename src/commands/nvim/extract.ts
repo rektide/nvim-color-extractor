@@ -74,4 +74,8 @@ export default class NvimExtract extends Command {
   }
 }
 
+if (require.main === module) {
+  NvimExtract.run()
+}
+
 export const extractColors = NvimExtract.extractColors

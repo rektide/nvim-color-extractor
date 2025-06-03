@@ -28,4 +28,8 @@ export default class NvimList extends Command {
   }
 }
 
+if (require.main === module) {
+  NvimList.run()
+}
+
 export const listColorschemes = NvimList.listColorschemes
