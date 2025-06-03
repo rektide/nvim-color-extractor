@@ -51,9 +51,7 @@ export default class GhosttyRandom extends Command {
 		return result
 	}
 
-	public async random(
-		state?: Partial<GhosttyRandomState>,
-	): Promise<string> {
+	public async random(state?: Partial<GhosttyRandomState>): Promise<string> {
 		let nvim
 		try {
 			const {
