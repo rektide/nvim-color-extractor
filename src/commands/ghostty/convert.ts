@@ -6,50 +6,33 @@ import { Neovim } from "neovim"
 
 import type { HlGroupsHex } from "../../types.ts"
 import { extractColors } from "../nvim/extract.ts"
-import { makeGhosttyDirs, type GhosttyDirs } from "../../utils/ghostty.ts"
+import { makeGhosttyDirs } from "../../utils/ghostty.ts"
 import { createNvim } from "../../utils/nvim.ts"
 
-export interface GhosttyConvertState extends GhosttyDirs {
-	nvim: Neovim
-	colorscheme: string
-}
+export class GhosttyConverter {
+	private nvim: Neovim
+	private ghosttyDir: string
+	private themesDir: string
 
-export type RequiredGhosttyConvertState = Partial<
-	Omit<GhosttyConvertState, "colorscheme">
-> &
-	Pick<GhosttyConvertState, "colorscheme">
+	constructor(
+		public readonly colorscheme: string,
+		private existingDirs?: { ghosttyDir?: string; themesDir?: string },
+	) {}
 
-export default class GhosttyConvert extends Command {
-	static description = "Convert a Neovim colorscheme to Ghostty theme format"
-	static examples = ["<%= config.bin %> <%= command.id %> gruvbox"]
+	public async initialize(): Promise<void> {
+		this.nvim = await createNvim()
 
-	static args = {
-		colorscheme: Args.string({
-			description: "Name of colorscheme to convert",
-			required: true,
-		}),
+		if (!this.existingDirs?.ghosttyDir || !this.existingDirs?.themesDir) {
+			const dirs = await makeGhosttyDirs(this.existingDirs)
+			this.ghosttyDir = dirs.ghosttyDir
+			this.themesDir = dirs.themesDir
+		} else {
+			this.ghosttyDir = this.existingDirs.ghosttyDir
+			this.themesDir = this.existingDirs.themesDir
+		}
 	}
 
-	private async makeState(
-		base: RequiredGhosttyConvertState,
-	): Promise<GhosttyConvertState> {
-		if (!base?.colorscheme) {
-			throw new Error("Expected a colorscheme")
-		}
-
-		const result = { ...base } as GhosttyConvertState
-		result.nvim ??= await createNvim()
-
-		if (!result.ghosttyDir) {
-			const dirs = await makeGhosttyDirs(result)
-			result.ghosttyDir = dirs.ghosttyDir
-			result.themesDir = dirs.themesDir
-		}
-
-		return result
-	}
-
-	private static writeTheme(file: fs.WriteStream, hlGroups: HlGroupsHex): void {
+	private writeTheme(file: fs.WriteStream, hlGroups: HlGroupsHex): void {
 		// Validate groups exists and have required colors
 		const normalGroup = hlGroups.Normal
 		const cursorGroup = hlGroups.Cursor
@@ -121,20 +104,20 @@ export default class GhosttyConvert extends Command {
 		}
 	}
 
-	private async convert(state: GhosttyConvertState): Promise<void> {
+	public async convert(): Promise<void> {
 		let file: fs.WriteStream | undefined
 		let themePath: string | undefined
 		try {
 			// Extract colors in hex format
-			const hlGroups = (await extractColors(state.colorscheme, {
-				nvim: state.nvim,
+			const hlGroups = (await extractColors(this.colorscheme, {
+				nvim: this.nvim,
 				format: "hex",
 			})) as HlGroupsHex
 
 			// Write theme
-			themePath = path.join(state.ghosttyDir, state.colorscheme)
+			themePath = path.join(this.ghosttyDir, this.colorscheme)
 			file = fs.createWriteStream(themePath)
-			GhosttyConvert.writeTheme(file, hlGroups)
+			this.writeTheme(file, hlGroups)
 
 			console.log(`Successfully created Ghostty theme at: ${themePath}`)
 		} finally {
@@ -142,18 +125,34 @@ export default class GhosttyConvert extends Command {
 		}
 	}
 
+	public async cleanup(): Promise<void> {
+		this.nvim?.quit()
+	}
+}
+
+export default class GhosttyConvert extends Command {
+	static description = "Convert a Neovim colorscheme to Ghostty theme format"
+	static examples = ["<%= config.bin %> <%= command.id %> gruvbox"]
+
+	static args = {
+		colorscheme: Args.string({
+			description: "Name of colorscheme to convert",
+			required: true,
+		}),
+	}
+
 	public async run(): Promise<void> {
 		const { args } = await this.parse(GhosttyConvert)
-		let state: GhosttyConvertState | undefined
+		const converter = new GhosttyConverter(args.colorscheme)
 
 		try {
-			state = await this.makeState(args)
-			await this.convert(state)
+			await converter.initialize()
+			await converter.convert()
 		} catch (err) {
 			console.error(`Failed to create Ghostty theme: ${err}`)
 			throw err
 		} finally {
-			state?.nvim?.quit()
+			await converter.cleanup()
 		}
 	}
 }
