@@ -2,6 +2,7 @@
   "name": "nvim-color-extractor",
   "version": "1.0.0",
   "description": "Neovim color scheme extractor and transformer, with ghostty output",
+  "type": "module",
   "main": "cli.js",
   "scripts": {
     "build": "tsc",
