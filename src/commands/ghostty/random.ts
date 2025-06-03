@@ -2,10 +2,12 @@
 import fs from "node:fs"
 import path from "node:path"
 import { Command } from "@oclif/core"
-import { retryFlag } from "../../utils/flags.ts"
+import type { Neovim } from "neovim"
 
-import { createNvim } from "../../utils/nvim.ts"
+import type { Zalgo } from "../../types.js"
+import { retryFlag } from "../../utils/flags.ts"
 import { prepareThemesDirectory } from "../../utils/ghostty.ts"
+import { createNvim } from "../../utils/nvim.ts"
 import { listColorschemes } from "../nvim/list.ts"
 import GhosttyConvert from "./convert.ts"
 
@@ -18,10 +20,11 @@ export default class GhosttyRandom extends Command {
 		retry: retryFlag,
 	}
 
-	private async pickAndExtract(): Promise<string> {
-		let nvim
+	private async pickAndExtract(
+		nvim: Zalgo<Neovim> = createNvim(),
+	): Promise<string> {
+		nvim = await nvim
 		try {
-			nvim = await createNvim()
 			const schemes = await listColorschemes(nvim)
 
 			if (schemes.length === 0) {
@@ -53,22 +56,19 @@ export default class GhosttyRandom extends Command {
 
 	public async run(): Promise<void> {
 		const { flags } = await this.parse(GhosttyRandom)
-		let lastError: Error | undefined
-		
+
+		const nvim = createNvim()
 		for (let attempt = 1; attempt <= flags.retry; attempt++) {
 			try {
-				await this.pickAndExtract()
+				await this.pickAndExtract(nvim)
 				return // Success - exit the retry loop
-			} catch (error) {
-				lastError = error as Error
-				console.error(`Attempt ${attempt}/${flags.retry} failed: ${error}`)
-				if (attempt < flags.retry) {
-					await new Promise(resolve => setTimeout(resolve, 1000)) // Wait 1s between retries
+			} catch (err) {
+				console.error(`Attempt ${attempt}/${flags.retry} failed: ${err}`)
+				if (attempt === flags.retry) {
+					throw err
 				}
 			}
 		}
-		
-		console.error(`Failed after ${flags.retry} attempts: ${lastError}`, { exit: 1 })
 	}
 
 	public async updateGhosttyConfig(

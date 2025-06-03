@@ -1,9 +1,10 @@
 #!/usr/bin/env -S node --experimental-strip-types
 import { Command } from "@oclif/core"
-import { retryFlag } from "../../utils/flags.ts"
 import process from "node:process"
 import { exec } from "node:child_process"
 import { promisify } from "node:util"
+
+import { retryFlag } from "../../utils/flags.ts"
 import GhosttyRandom from "./random.ts"
 
 const execAsync = promisify(exec)
@@ -27,27 +28,13 @@ export default class GhosttyExec extends Command {
 
 	public async run(): Promise<void> {
 		const { flags } = await this.parse(GhosttyExec)
-		let lastError: Error | undefined
-		
-		for (let attempt = 1; attempt <= flags.retry; attempt++) {
-			try {
-			// First run ghostty:random to select and set a theme
-			await GhosttyRandom.run(["--retry", flags.retry.toString()])
+		// First run ghostty:random to select and set a theme
+		await GhosttyRandom.run(["--retry", flags.retry.toString()])
 
-			// Find and execute ghostty
-			const ghosttyPath = await this.findGhosttyPath()
-			process.execve?.(ghosttyPath, [ghosttyPath], process.env)
-				return // Success - exit the retry loop
-			} catch (error) {
-				lastError = error as Error
-				console.error(`Attempt ${attempt}/${flags.retry} failed: ${error}`)
-				if (attempt < flags.retry) {
-					await new Promise(resolve => setTimeout(resolve, 1000)) // Wait 1s between retries
-				}
-			}
-		}
-		
-		console.error(`Failed after ${flags.retry} attempts: ${lastError}`, { exit: 1 })
+		// Find and execute ghostty
+		const ghosttyPath = await this.findGhosttyPath()
+		process.execve?.(ghosttyPath, [ghosttyPath], process.env)
+		return // Success - exit the retry loop
 	}
 }
 

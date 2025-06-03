@@ -98,7 +98,6 @@ export default class GhosttyConvert extends Command {
 
 	public async run(): Promise<void> {
 		const { args } = await this.parse(GhosttyConvert)
-		console.log({ args })
 		let nvim
 		let file: fs.WriteStream | undefined
 
