@@ -51,7 +51,7 @@ export default class GhosttyRandom extends Command {
 		return result
 	}
 
-	private async pickAndExtract(
+	public async random(
 		state?: Partial<GhosttyRandomState>,
 	): Promise<string> {
 		let nvim
@@ -101,23 +101,29 @@ export default class GhosttyRandom extends Command {
 		}
 	}
 
-	public async run(): Promise<void> {
-		const { flags } = await this.parse(GhosttyRandom)
+	public async randomAttempts(
+		retry: number,
+		state?: Partial<GhosttyRandomState>,
+	): Promise<string> {
+		const resolvedState = await this.makeState(state)
 
-		const state = await this.makeState()
-
-		for (let attempt = 1; attempt <= flags.retry; attempt++) {
+		for (let attempt = 1; attempt <= retry; attempt++) {
 			try {
-				await this.pickAndExtract(state)
-				return // Success - exit the retry loop
+				return await this.random(resolvedState)
 			} catch (err) {
-				console.error(`Attempt ${attempt}/${flags.retry} failed: ${err}`)
-				if (attempt === flags.retry) {
+				console.error(`Attempt ${attempt}/${retry} failed: ${err}`)
+				if (attempt === retry) {
 					console.error("Throwing")
 					throw err
 				}
 			}
 		}
+		throw new Error("Should never reach here")
+	}
+
+	public async run(): Promise<void> {
+		const { flags } = await this.parse(GhosttyRandom)
+		await this.randomAttempts(flags.retry)
 	}
 
 	public async updateGhosttyConfig(
