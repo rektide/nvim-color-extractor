@@ -2,6 +2,7 @@
 import fs from "node:fs"
 import path from "node:path"
 import { Command } from "@oclif/core"
+import { retryFlag } from "../../utils/flags.ts"
 
 import { createNvim } from "../../utils/nvim.ts"
 import { prepareThemesDirectory } from "../../utils/ghostty.ts"
@@ -13,7 +14,16 @@ export default class GhosttyRandom extends Command {
 		"Convert a random Neovim colorscheme to Ghostty theme format, and set ghostty to use"
 	static examples = ["<%= config.bin %> <%= command.id %>"]
 
+	static flags = {
+		retry: retryFlag,
+	}
+
 	public async run(): Promise<void> {
+		const { flags } = await this.parse(GhosttyRandom)
+		let lastError: Error | undefined
+		
+		for (let attempt = 1; attempt <= flags.retry; attempt++) {
+			try {
 		let nvim
 		try {
 			nvim = await createNvim()
@@ -40,10 +50,19 @@ export default class GhosttyRandom extends Command {
 
 			// Update Ghostty config to use this theme
 			await this.updateGhosttyConfig(randomScheme, ghosttyDir)
-		} catch (error) {
-			console.error(`Failed to create random theme: ${error}`, { exit: 1 })
+				return // Success - exit the retry loop
+			} catch (error) {
+				lastError = error as Error
+				console.error(`Attempt ${attempt}/${flags.retry} failed: ${error}`)
+				if (attempt < flags.retry) {
+					await new Promise(resolve => setTimeout(resolve, 1000)) // Wait 1s between retries
+				}
+			} finally {
+				nvim?.quit()
+			}
 		}
-		nvim?.quit()
+		
+		console.error(`Failed after ${flags.retry} attempts: ${lastError}`, { exit: 1 })
 	}
 
 	public async updateGhosttyConfig(
