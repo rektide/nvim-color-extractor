@@ -1,8 +1,8 @@
 import { Command } from "@oclif/core"
-import { createNvim } from "../../utils/nvim"
-import { buildRestoreColors, restoreColors } from "../../utils/restore"
-import { extractColors } from "./extract"
-import { listColorschemes } from "./list"
+import { createNvim } from "../../utils/nvim.ts"
+import { buildRestoreColors, restoreColors } from "../../utils/restore.ts"
+import { extractColors } from "./extract.ts"
+import { listColorschemes } from "./list.ts"
 
 export default class NvimExtractAll extends Command {
   static description = "Extract highlight groups for all available colorschemes"

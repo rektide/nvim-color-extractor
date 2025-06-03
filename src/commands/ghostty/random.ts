@@ -2,10 +2,10 @@ import fs from "node:fs"
 import path from "node:path"
 import { Command } from "@oclif/core"
 
-import { createNvim } from "../../utils/nvim"
-import { prepareThemesDirectory } from "../../utils/ghostty"
-import { listColorschemes } from "../nvim/list"
-import GhosttyConvert from "./convert"
+import { createNvim } from "../../utils/nvim.ts"
+import { prepareThemesDirectory } from "../../utils/ghostty.ts"
+import { listColorschemes } from "../nvim/list.ts"
+import GhosttyConvert from "./convert.ts"
 
 export default class GhosttyRandom extends Command {
   static description =

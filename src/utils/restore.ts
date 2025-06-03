@@ -1,6 +1,6 @@
 import { type Neovim } from "neovim"
-import { extractColors } from "../commands/nvim/extract"
-import { defineLuaFunction } from "./nvim"
+import { extractColors } from "../commands/nvim/extract.ts"
+import { defineLuaFunction } from "./nvim.ts"
 import { HlGroupsNum } from "../types"
 
 function jsToLua(obj: any): string {

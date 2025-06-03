@@ -1,7 +1,7 @@
 import { Args, Command, Flags } from "@oclif/core"
 import { Neovim } from "neovim"
 import fs from "fs"
-import { parseColorScheme } from "../../colorscheme-parser"
+import { parseColorScheme } from "../../colorscheme-parser.ts"
 
 export default class NvimParseTheme extends Command {
   static description = "Parse a Neovim color theme file (bad, hack)"

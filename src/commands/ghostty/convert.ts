@@ -2,10 +2,10 @@ import fs from "node:fs"
 import path from "node:path"
 import { Args, Command } from "@oclif/core"
 
-import { HlGroupsHex } from "../../types"
-import { extractColors } from "../nvim/extract"
-import { prepareThemesDirectory } from "../../utils/ghostty"
-import { createNvim } from "../../utils/nvim"
+import { HlGroupsHex } from "../../types.ts"
+import { extractColors } from "../nvim/extract.ts"
+import { prepareThemesDirectory } from "../../utils/ghostty.ts"
+import { createNvim } from "../../utils/nvim.ts"
 
 export default class GhosttyConvert extends Command {
   static description = "Convert a Neovim colorscheme to Ghostty theme format"

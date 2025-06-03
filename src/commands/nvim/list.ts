@@ -1,5 +1,5 @@
 import { Command } from "@oclif/core"
-import { createNvim } from "../../utils/nvim"
+import { createNvim } from "../../utils/nvim.ts"
 import { Neovim } from "neovim"
 
 export default class NvimList extends Command {
