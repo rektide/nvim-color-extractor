@@ -45,9 +45,9 @@ export default class GhosttyRandom extends Command {
 		nvim?.quit()
 	}
 
-	private async updateGhosttyConfig(
+	public async updateGhosttyConfig(
 		colorscheme: string,
-		ghosttyDir: string,
+		ghosttyDir: string = prepareThemesDirectory(),
 	): Promise<void> {
 		const configPath = path.join(path.dirname(ghosttyDir), "config")
 

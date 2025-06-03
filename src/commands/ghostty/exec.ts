@@ -22,13 +22,12 @@ export default class GhosttyExec extends Command {
 
 	public async run(): Promise<void> {
 		try {
-			console.log(process.version)
 			// First run ghostty:random to select and set a theme
 			await GhosttyRandom.run([])
 
 			// Find and execute ghostty
 			const ghosttyPath = await this.findGhosttyPath()
-			process.execve(ghosttyPath, [ghosttyPath], process.env)
+			process.execve?.(ghosttyPath, [ghosttyPath], process.env)
 		} catch (error) {
 			console.error(`Failed to execute Ghostty: ${error}`, { exit: 1 })
 		}
