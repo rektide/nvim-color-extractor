@@ -2,6 +2,7 @@
 import fs from "node:fs"
 import path from "node:path"
 import { Args, Command } from "@oclif/core"
+import { Neovim } from "neovim"
 
 import type { HlGroupsHex } from "../../types.ts"
 import { extractColors } from "../nvim/extract.ts"
@@ -12,6 +13,11 @@ export interface GhosttyConvertState extends GhosttyDirs {
 	nvim: Neovim
 	colorscheme: string
 }
+
+export type RequiredGhosttyConvertState = Partial<
+	Omit<GhosttyConvertState, "colorscheme">
+> &
+	Pick<GhosttyConvertState, "colorscheme">
 
 export default class GhosttyConvert extends Command {
 	static description = "Convert a Neovim colorscheme to Ghostty theme format"
@@ -25,14 +31,16 @@ export default class GhosttyConvert extends Command {
 	}
 
 	private async makeState(
-		args: { colorscheme: string },
-		base?: Partial<GhosttyConvertState>,
+		base: RequiredGhosttyConvertState,
 	): Promise<GhosttyConvertState> {
+		if (!base?.colorscheme) {
+			throw new Error("Expected a colorscheme")
+		}
+
 		const result = { ...base } as GhosttyConvertState
 		result.nvim ??= await createNvim()
-		result.colorscheme = args.colorscheme
 
-		if (!(result.ghosttyDir)) {
+		if (!result.ghosttyDir) {
 			const dirs = await makeGhosttyDirs(result)
 			result.ghosttyDir = dirs.ghosttyDir
 			result.themesDir = dirs.themesDir
@@ -41,11 +49,7 @@ export default class GhosttyConvert extends Command {
 		return result
 	}
 
-	private static writeTheme(
-		file: fs.WriteStream,
-		colorscheme: string,
-		hlGroups: HlGroupsHex,
-	): void {
+	private static writeTheme(file: fs.WriteStream, hlGroups: HlGroupsHex): void {
 		// Validate groups exists and have required colors
 		const normalGroup = hlGroups.Normal
 		const cursorGroup = hlGroups.Cursor
@@ -95,7 +99,6 @@ export default class GhosttyConvert extends Command {
 		colors.delete(visualGroup.bg)
 
 		// Write header using Normal and Visual group colors
-		file.write(`# ${colorscheme} theme generated from Neovim colorscheme\n\n`)
 		file.write(`foreground = ${normalGroup.fg}\n`)
 		file.write(`background = ${normalGroup.bg}\n`)
 		file.write(`cursor-text = ${cursorGroup.fg}\n`)
@@ -120,6 +123,7 @@ export default class GhosttyConvert extends Command {
 
 	private async convert(state: GhosttyConvertState): Promise<void> {
 		let file: fs.WriteStream | undefined
+		let themePath: string | undefined
 		try {
 			// Extract colors in hex format
 			const hlGroups = (await extractColors(state.colorscheme, {
@@ -127,13 +131,12 @@ export default class GhosttyConvert extends Command {
 				format: "hex",
 			})) as HlGroupsHex
 
-			const themePath = path.join(state.ghosttyDir, state.colorscheme)
+			// Write theme
+			themePath = path.join(state.ghosttyDir, state.colorscheme)
 			file = fs.createWriteStream(themePath)
-			GhosttyConvert.writeTheme(file, state.colorscheme, hlGroups)
+			GhosttyConvert.writeTheme(file, hlGroups)
 
-			console.log(
-				`Successfully created Ghostty theme at: ${path.join(state.ghosttyDir, state.colorscheme)}`,
-			)
+			console.log(`Successfully created Ghostty theme at: ${themePath}`)
 		} finally {
 			file?.end()
 		}
