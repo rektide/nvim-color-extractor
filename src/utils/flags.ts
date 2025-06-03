@@ -3,6 +3,6 @@ import { Flags } from "@oclif/core"
 export const retryFlag = Flags.integer({
     char: "r",
     description: "Number of times to retry on failure",
-    default: 1,
+    default: 7,
     min: 1,
 })

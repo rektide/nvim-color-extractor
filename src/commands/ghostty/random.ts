@@ -18,12 +18,7 @@ export default class GhosttyRandom extends Command {
 		retry: retryFlag,
 	}
 
-	public async run(): Promise<void> {
-		const { flags } = await this.parse(GhosttyRandom)
-		let lastError: Error | undefined
-		
-		for (let attempt = 1; attempt <= flags.retry; attempt++) {
-			try {
+	private async pickAndExtract(): Promise<string> {
 		let nvim
 		try {
 			nvim = await createNvim()
@@ -45,11 +40,24 @@ export default class GhosttyRandom extends Command {
 				console.log(`Theme ${randomScheme} already exists at ${themePath}`)
 			} else {
 				// Convert using existing ToGhost command
-				GhosttyConvert.run([randomScheme])
+				await GhosttyConvert.run([randomScheme])
 			}
 
 			// Update Ghostty config to use this theme
 			await this.updateGhosttyConfig(randomScheme, ghosttyDir)
+			return randomScheme
+		} finally {
+			nvim?.quit()
+		}
+	}
+
+	public async run(): Promise<void> {
+		const { flags } = await this.parse(GhosttyRandom)
+		let lastError: Error | undefined
+		
+		for (let attempt = 1; attempt <= flags.retry; attempt++) {
+			try {
+				await this.pickAndExtract()
 				return // Success - exit the retry loop
 			} catch (error) {
 				lastError = error as Error
@@ -57,8 +65,6 @@ export default class GhosttyRandom extends Command {
 				if (attempt < flags.retry) {
 					await new Promise(resolve => setTimeout(resolve, 1000)) // Wait 1s between retries
 				}
-			} finally {
-				nvim?.quit()
 			}
 		}
 		

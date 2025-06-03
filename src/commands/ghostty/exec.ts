@@ -32,7 +32,7 @@ export default class GhosttyExec extends Command {
 		for (let attempt = 1; attempt <= flags.retry; attempt++) {
 			try {
 			// First run ghostty:random to select and set a theme
-			await GhosttyRandom.run([])
+			await GhosttyRandom.run(["--retry", flags.retry.toString()])
 
 			// Find and execute ghostty
 			const ghosttyPath = await this.findGhosttyPath()
