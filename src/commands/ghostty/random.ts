@@ -86,8 +86,12 @@ export default class GhosttyRandom extends Command {
 					throw err
 				}
 			}
-			// Convert using existing ToGhost command
-			await GhosttyConvert.run([randomScheme])
+			// Convert using GhosttyConvert's convert method
+			const convert = new GhosttyConvert([])
+			await convert.convert({
+				...state,
+				colorscheme: randomScheme,
+			})
 
 			// Update Ghostty config to use this theme
 			await this.updateGhosttyConfig(randomScheme, ghosttyDir)
