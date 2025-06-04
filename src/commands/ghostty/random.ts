@@ -69,6 +69,21 @@ export class GhosttyRandomer extends NvimGhosttyBase {
 		return randomScheme
 	}
 
+	async randomAttempts(retry: number): Promise<string> {
+		for (let attempt = 1; attempt <= retry; attempt++) {
+			try {
+				return await this.random()
+			} catch (err) {
+				console.error(`Attempt ${attempt}/${retry} failed:`, err)
+				console.error()
+				if (attempt === retry) {
+					throw err
+				}
+			}
+		}
+		throw new Error("All attempts failed")
+	}
+
 	async updateGhosttyConfig(colorscheme: string): Promise<void> {
 		const configPath = path.join(this.ghosttyDir, "config")
 
@@ -108,31 +123,14 @@ export default class GhosttyRandom extends Command {
 		retry: retryFlag,
 	}
 
-	public async randomAttempts(retry: number): Promise<string> {
-		const randomer = new GhosttyRandomer()
-
-		try {
-			for (let attempt = 1; attempt <= retry; attempt++) {
-				try {
-					return await randomer.random()
-				} catch (err) {
-					console.error(`Attempt ${attempt}/${retry} failed:`, err)
-					console.error()
-					if (attempt === retry) {
-						throw err
-					}
-				}
-			}
-		} finally {
-			randomer.cleanup()
-		}
-
-		throw new Error("All attempts failed")
-	}
-
 	public async run(): Promise<void> {
 		const { flags } = await this.parse(GhosttyRandom)
-		await this.randomAttempts(flags.retry)
+		const randomer = new GhosttyRandomer()
+		try {
+			await randomer.randomAttempts(flags.retry)
+		} finally {
+			await randomer.cleanup()
+		}
 	}
 }
 
