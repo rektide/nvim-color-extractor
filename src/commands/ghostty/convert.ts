@@ -1,6 +1,6 @@
 #!/usr/bin/env -S node --experimental-strip-types
 import fs from "node:fs"
-import path from "node:path"
+import timers from "node:timers/promises"
 import { Args, Command } from "@oclif/core"
 
 import type { HlGroupsHex } from "../../types.ts"
@@ -8,7 +8,11 @@ import { NvimGhosttyBase } from "../../utils/nvim-ghostty.ts"
 import { extractColors } from "../nvim/extract.ts"
 
 export class GhosttyConverter extends NvimGhosttyBase {
-	public static writeTheme(file: fs.WriteStream, hlGroups: HlGroupsHex): void {
+	public static checkTheme(hlGroups: HlGroupsHex) {
+		return GhosttyConverter.writeTheme(hlGroups)
+	}
+
+	public static writeTheme(hlGroups: HlGroupsHex, file?: fs.WriteStream): void {
 		// Validate groups exists and have required colors
 		const normalGroup = hlGroups.Normal
 		const cursorGroup = hlGroups.Cursor
@@ -34,6 +38,10 @@ export class GhosttyConverter extends NvimGhosttyBase {
 			throw new Error(
 				"Visual group must have both foreground and background colors",
 			)
+		}
+
+		if (!file) {
+			return
 		}
 
 		// Collect all unique foreground colors with no background
@@ -69,7 +77,7 @@ export class GhosttyConverter extends NvimGhosttyBase {
 		let availableColors = Array.from(colors)
 		for (let i = 0; i < 16; i++) {
 			if (availableColors.length === 0) {
-				console.error(`ran out of colors at: ${i}`)
+				console.error(`Ran out of colors at: ${i}`)
 				// If we run out of colors, re-use the set
 				availableColors = Array.from(colors)
 			}
@@ -82,7 +90,7 @@ export class GhosttyConverter extends NvimGhosttyBase {
 
 	public async convert(colorscheme: string): Promise<void> {
 		let file: fs.WriteStream | undefined
-		let themePath: string | undefined
+		let themesPath: string | undefined
 		try {
 			// Extract colors in hex format
 			const hlGroups = (await extractColors(colorscheme, {
@@ -90,20 +98,26 @@ export class GhosttyConverter extends NvimGhosttyBase {
 				format: "hex",
 			})) as HlGroupsHex
 
-			// Write theme
-			themePath = path.join(this.ghosttyDir, colorscheme)
-			file = fs.createWriteStream(themePath, { flags: "ax" })
-			GhosttyConverter.writeTheme(file, hlGroups)
+			// Verify it has viable colors for conversion
+			GhosttyConverter.checkTheme(hlGroups)
 
-			console.log(`Successfully created Ghostty theme at: ${themePath}`)
-		} finally {
-			if (file) {
-				file.end()
-				if (themePath) {
-					// cleanup bad file
-					await fs.promises.rm(themePath)
-				}
+			// Write theme
+			themesPath = this.getThemesPath(colorscheme)
+			file = fs.createWriteStream(themesPath, { flags: "wx" })
+			GhosttyConverter.writeTheme(hlGroups, file)
+
+			console.log(`Successfully created Ghostty theme at: ${themesPath}`)
+		} catch (err) {
+			if (file && themesPath) {
+				file?.end()
+				// TODO: poll until rm works?
+				// but now that we checkTheme this should almost never occur
+				await timers.setTimeout(100)
+				await fs.promises.rm(themesPath)
 			}
+			throw err
+		} finally {
+			file?.end()
 		}
 	}
 }

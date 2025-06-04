@@ -2,18 +2,101 @@
 import fs from "node:fs/promises"
 import path from "node:path"
 import { Command } from "@oclif/core"
-import type { Neovim } from "neovim"
 
-import type { Zalgo } from "../../types.js"
-import { listColorschemes } from "../nvim/list.ts"
+import { GhosttyConverter } from "./convert.ts"
 import { retryFlag } from "../../utils/flags.ts"
-import { type GhosttyDirs, makeGhosttyDirs } from "../../utils/ghostty.ts"
-import { createNvim } from "../../utils/nvim.ts"
-import GhosttyConvert from "./convert.ts"
+import {
+	NvimGhosttyBase,
+	type NvimGhosttyComposite,
+} from "../../utils/nvim-ghostty.ts"
+import NvimList, { listColorschemes } from "../nvim/list.ts"
+import type { NvimGhosttyOptions, Zalgo } from "../../types.ts"
 
-export interface GhosttyRandomState extends GhosttyDirs {
-	nvim: Neovim
-	schemes: Array<string>
+export interface GhosttyRandomerOptions extends NvimGhosttyOptions {
+	schemes: Zalgo<string[]>
+	converter: GhosttyConverter
+}
+
+export class GhosttyRandomer extends NvimGhosttyBase {
+	static async ready(
+		self: GhosttyRandomer,
+	): Promise<GhosttyRandomer & NvimGhosttyComposite> {
+		self.schemes = await self.schemes
+		return self as unknown as GhosttyRandomer & NvimGhosttyComposite
+	}
+
+	schemes: Zalgo<string[]>
+	converter: GhosttyConverter
+
+	constructor(base?: Partial<GhosttyRandomerOptions>) {
+		super(base)
+		this.converter = new GhosttyConverter(this)
+
+		this.schemes = base?.schemes as string[]
+		if (!this.schemes) {
+			this.schemes = Promise.resolve(this.nvim).then(NvimList.listColorschemes)
+		}
+		this.ready = GhosttyRandomer.ready(this)
+	}
+
+	async random(): Promise<string> {
+		const schemes = await this.schemes
+		if (schemes.length === 0) {
+			throw new Error("No colorschemes found")
+		}
+
+		// Pick random scheme
+		const randomScheme = schemes[Math.floor(Math.random() * schemes.length)]
+		console.log(`Selected random colorscheme: ${randomScheme}`)
+
+		const themePath = this.getThemesPath(randomScheme)
+
+		// Check if theme already exists in Ghostty's directory
+		let stat
+		try {
+			stat = await fs.stat(themePath)
+			console.log(`Theme ${randomScheme} already exists at ${themePath}`)
+		} catch (err) {
+			if (stat) {
+				throw err
+			}
+
+			await this.converter.convert(randomScheme)
+		}
+
+		// Update Ghostty config to use this theme
+		await this.updateGhosttyConfig(randomScheme)
+		return randomScheme
+	}
+
+	async updateGhosttyConfig(colorscheme: string): Promise<void> {
+		const configPath = path.join(this.ghosttyDir, "config")
+
+		try {
+			let configContent = ""
+			try {
+				configContent = await fs.readFile(configPath, "utf-8")
+				// Comment out any existing theme lines
+				configContent = configContent.replace(/^theme\s*=/gm, "# theme =")
+			} catch (error) {
+				if ((error as any)?.code !== "ENOENT") {
+					throw error
+				}
+				// File doesn't exist yet, we'll create it
+			}
+
+			// Append new theme setting
+			const sep = configContent.at(-1) === "\n" ? "" : "\n"
+			configContent += `${sep}theme = ${colorscheme}\n`
+
+			await fs.writeFile(configPath, configContent)
+			console.log(
+				`Updated Ghostty config at ${configPath} to use colorscheme: ${colorscheme}`,
+			)
+		} catch (error) {
+			console.error(`Failed to update Ghostty config: ${error}`)
+		}
+	}
 }
 
 export default class GhosttyRandom extends Command {
@@ -27,19 +110,24 @@ export default class GhosttyRandom extends Command {
 
 	public async randomAttempts(retry: number): Promise<string> {
 		const randomer = new GhosttyRandomer()
-		randomer.schemes = await listColorschemes(await randomer.nvim)
 
-		for (let attempt = 1; attempt <= retry; attempt++) {
-			try {
-				return await randomer.random()
-			} catch (err) {
-				console.error(`Attempt ${attempt}/${retry} failed: ${err}`)
-				if (attempt === retry) {
-					throw err
+		try {
+			for (let attempt = 1; attempt <= retry; attempt++) {
+				try {
+					return await randomer.random()
+				} catch (err) {
+					console.error(`Attempt ${attempt}/${retry} failed:`, err)
+					console.error()
+					if (attempt === retry) {
+						throw err
+					}
 				}
 			}
+		} finally {
+			randomer.cleanup()
 		}
-		throw new Error("Should never reach here")
+
+		throw new Error("All attempts failed")
 	}
 
 	public async run(): Promise<void> {

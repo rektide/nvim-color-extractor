@@ -42,7 +42,9 @@ export class NvimBase implements ZNvimOptions, Readyable<NvimBase> {
 	}
 
 	async cleanup() {
-		;(await this.nvim)?.quit()
+		const nvim = await this.nvim
+		nvim.quit()
+		return this
 	}
 }
 

@@ -32,7 +32,6 @@ export interface ZNvimOptions {
 
 export interface GhosttyOptions {
 	ghosttyDir: string
-	themesDir: string
 }
 
 export type NvimGhosttyOptions = NvimOptions & GhosttyOptions
