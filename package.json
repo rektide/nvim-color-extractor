@@ -37,7 +37,7 @@
 		"pretty-quick": "^4.2.2"
 	},
 	"oclif": {
-		"commands": "./src/commands",
+		"commands": "./dist/commands",
 		"bin": "nvim-color-extractor",
 		"topics": {
 			"nvim": {
@@ -45,6 +45,9 @@
 			},
 			"ghostty": {
 				"description": "commands for generating ghostty themes from nvim colorschemes"
+			},
+			"opencode": {
+				"description": "commands for exporting to OpenCode theme format"
 			}
 		}
 	},

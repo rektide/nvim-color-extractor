@@ -2,7 +2,7 @@
 
 > Neovim color scheme extractor and transformer, with ghostty output
 
-```sh
+````sh
 $ nvim-color-extractor --help
 
 USAGE
@@ -13,8 +13,47 @@ COMMANDS
   nvim:extract-all  Extract highlight groups for all available colorschemes
   nvim:list         List all available Neovim color schemes
   nvim:parse-theme  Parse a Neovim color theme file (bad, hack)
-  ghostty:convert   Convert a Neovim colorscheme to Ghostty theme format
-  ghostty:random    Convert a random Neovim colorscheme to Ghostty theme format, and set ghostty to use
+   ghostty:convert   Convert a Neovim colorscheme to Ghostty theme format
+   ghostty:random    Convert a random Neovim colorscheme to Ghostty theme format, and set ghostty to use
+   opencode:export   Export a Neovim colorscheme to OpenCode theme format
+
+# OpenCode Export
+
+Export nvim colorschemes to [OpenCode](https://opencode.ai/) theme format. OpenCode themes use a JSON format with comprehensive color definitions for UI elements, syntax highlighting, and markdown rendering.
+
+## Usage
+
+```sh
+# Export a colorscheme to OpenCode theme format
+node export-opencode-simple.js gruvbox
+
+# Export with a custom theme name
+node export-opencode-simple.js solarized --name my-solarized
+````
+
+The exported theme follows OpenCode's [theme specification](https://opencode.ai/docs/themes/) and includes:
+
+- Color definitions for all UI elements
+- Syntax highlighting colors
+- Markdown rendering colors
+- Dark and light variants (using the same colors by default)
+
+## Example Output
+
+```json
+{
+  "$schema": "https://opencode.ai/theme.json",
+  "defs": {
+    "custom0": "#282828",
+    "custom1": "#ebdbb2",
+    ...
+  },
+  "theme": {
+    "primary": { "dark": "custom4", "light": "custom4" },
+    "secondary": { "dark": "custom5", "light": "custom5" },
+    ...
+  }
+}
 ```
 
 # Ghostty Output
