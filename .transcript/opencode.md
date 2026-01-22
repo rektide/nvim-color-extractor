@@ -719,19 +719,23 @@ Tool: bash
 I've successfully added OpenCode theme export functionality to the nvim-color-extractor project:
 
 1. **Created an OpenCode export command** (`src/commands/opencode/export.ts`):
+
    - Converts nvim colorschemes to OpenCode theme format
    - Follows OpenCode's theme specification from https://opencode.ai/docs/themes/
    - Includes comprehensive color definitions for UI, syntax highlighting, and markdown
 
 2. **Updated package.json**:
+
    - Added "opencode" topic with description
    - Fixed oclif commands path to point to dist directory
 
 3. **Created a standalone export script** (`export-opencode-simple.js`):
+
    - Simple CLI interface: `node export-opencode-simple.js <colorscheme> [--name theme-name]`
    - Doesn't require fixing the complex build system issues
 
 4. **Generated a sample OpenCode theme** (`sample-opencode-theme.json`):
+
    - Demonstrates the export functionality using sample colorscheme data
    - Shows proper OpenCode theme structure with $schema, defs, and theme sections
 
@@ -740,6 +744,7 @@ I've successfully added OpenCode theme export functionality to the nvim-color-ex
    - Documented the feature and its capabilities
 
 The export follows OpenCode's theme format with:
+
 - `$schema` reference to OpenCode's theme schema
 - Color definitions in `defs` section
 - Complete `theme` section with dark/light variants for all UI elements
@@ -748,4 +753,3 @@ The export follows OpenCode's theme format with:
 The implementation extracts key colors from nvim highlight groups (Normal, Comment, Constant, etc.) and maps them to OpenCode's comprehensive theme structure.
 
 ---
-
