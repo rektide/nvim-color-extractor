@@ -1,6 +1,7 @@
 #!/usr/bin/env -S node --experimental-strip-types
 import { Command, Flags } from "@oclif/core"
 
+import { createNvim } from "../../utils/nvim.ts"
 import { OpenCodeConfigBase } from "../../opencode/config.ts"
 import { themeExists } from "../../opencode/theme.ts"
 import { exportThemeFromNvim } from "../../opencode/export.ts"
@@ -41,7 +42,12 @@ export default class OpenCodeProjectConfig extends Command {
 
 		if (!exists || flags.forceExport) {
 			this.log(`Exporting theme from nvim: ${themeName}`)
-			await exportThemeFromNvim(themeName, themeName, flags.project)
+			const nvim = await createNvim()
+			try {
+				await exportThemeFromNvim(themeName, themeName, flags.project, nvim)
+			} finally {
+				nvim.quit()
+			}
 		}
 
 		const config = new OpenCodeConfigBase({ project: flags.project })
